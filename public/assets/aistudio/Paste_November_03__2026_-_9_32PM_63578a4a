@@ -1,0 +1,2941 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIPONDOK - PP Miftahul Ulum Kalisat | Sistem Informasi Pesantren Terpadu</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icon CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pondok: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Animation & Styling for Running Marquee Alert */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 25s linear infinite;
+        }
+        .marquee-container:hover .marquee-content {
+            animation-play-state: paused;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Print Settings for Official PDF Reports */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printableArea, #printableArea * {
+                visibility: visible;
+            }
+            #printableArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 24px;
+                background: #fff;
+                color: #000;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- TOP HEADER / BRAND NAVIGATION BAR -->
+    <header class="bg-gradient-to-r from-pondok-800 via-pondok-900 to-slate-900 text-white shadow-lg sticky top-0 z-30 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Logo & Dynamic Header Title -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="showRoleSelection()">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg font-bold text-xl border border-emerald-300/40">
+                        <i class="fa-solid fa-kaaba"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base sm:text-lg leading-tight tracking-wide flex items-center gap-1.5 flex-wrap">
+                            <span id="headerBrandName">SIPONDOK</span> 
+                            <span id="headerPesantrenBadge" class="bg-emerald-600/50 text-emerald-200 text-xs px-2 py-0.5 rounded-md font-extrabold border border-emerald-400/30">PP Miftahul Ulum Kalisat</span>
+                            <span class="bg-emerald-500/30 text-emerald-300 text-[10px] px-2 py-0.5 rounded-full border border-emerald-400/30 font-semibold"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Gemini AI</span>
+                        </h1>
+                        <p id="headerTaglineText" class="text-[11px] text-emerald-200/80">Sistem Manajemen & Pembinaan Santri Terpadu</p>
+                    </div>
+                </div>
+
+                <!-- Controls & Active User Status -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <!-- Google AI Studio Status Indicator -->
+                    <button onclick="openApiKeyModal()" class="bg-slate-800/80 hover:bg-slate-700/80 text-emerald-300 border border-emerald-500/30 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition" title="Pengaturan API Key Google AI Studio">
+                        <i class="fa-solid fa-microchip text-emerald-400"></i>
+                        <span class="hidden sm:inline">Google AI Studio</span>
+                    </button>
+
+                    <div id="userBadge" class="hidden sm:flex items-center space-x-2 bg-pondok-700/60 px-3 py-1.5 rounded-full border border-pondok-600/50 text-xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="activeRoleText" class="font-medium text-emerald-100">Belum Login</span>
+                    </div>
+
+                    <button id="logoutBtn" onclick="logout()" class="hidden bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center space-x-1">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Keluar</span>
+                    </button>
+                    
+                    <button onclick="showRoleSelection()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center space-x-1">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span class="hidden md:inline">Ganti Peran</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTAINER UTAMA APP -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- 1. LANDING & PORTAL SELECTION VIEW (DYNAMIC VIA ADMIN CMS) -->
+        <div id="portalSelectionView" class="space-y-6">
+            
+            <!-- Hero Banner Intro (Editable via CMS) -->
+            <div id="landingHeroCard" class="bg-gradient-to-br from-pondok-900 via-pondok-800 to-slate-900 text-white rounded-2xl p-6 sm:p-10 shadow-2xl relative overflow-hidden border border-pondok-700/40">
+                <div class="relative z-10 max-w-3xl space-y-4">
+                    <span id="landingHeroBadge" class="inline-flex items-center space-x-1.5 bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase border border-emerald-400/30">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <span id="landingPesantrenTitle">Pondok Pesantren Miftahul Ulum Kalisat</span>
+                    </span>
+                    <h2 id="landingHeroTitle" class="text-2xl sm:text-4xl font-extrabold leading-tight tracking-tight">Sistem Informasi Pesantren & Pembinaan Santri Terpadu</h2>
+                    <p id="landingHeroDesc" class="text-emerald-100/90 text-sm sm:text-base leading-relaxed">
+                        Platform resmi pengelolaan data santri (12 Kelas Awaliyah & Wustho Putra/Putri), absensi harian, kedisiplinan, laporan PDF resmi ber-KOP Surat, serta layanan obrolan Wali Santri & konseling Gemini AI.
+                    </p>
+                </div>
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none">
+                    <i id="landingHeroIcon" class="fa-solid fa-mosque text-[240px]"></i>
+                </div>
+            </div>
+
+            <!-- Dynamic Running Alert / Pengumuman Banner -->
+            <div class="bg-amber-500 text-slate-900 px-4 py-2 rounded-xl shadow-sm border border-amber-400 flex items-center space-x-3 text-xs font-bold">
+                <span class="bg-slate-900 text-amber-400 px-2.5 py-0.5 rounded-md text-[10px] uppercase font-black tracking-wider shrink-0">
+                    <i class="fa-solid fa-bullhorn mr-1"></i> Pengumuman
+                </span>
+                <div class="marquee-container flex-grow">
+                    <div id="landingRunningBanner" class="marquee-content font-semibold">
+                        📢 PENGUMUMAN: Pendaftaran Santri Baru Tahun Ajaran 2026/2027 PP Miftahul Ulum Kalisat Telah Dibuka! | Libur Akhir Semester Dimulai Tanggal 15 Desember.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Visi & Misi Section (Positioned Directly Below Pengumuman Banner) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-2">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-eye text-emerald-600"></i> Visi Pesantren
+                    </h3>
+                    <p id="landingVisiText" class="text-xs text-slate-600 leading-relaxed italic bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-100">
+                        "Terwujudnya Generasi Santri Berakhlakul Karimah, Unggul Dalam Ilmu Agama, Tafaqquh Fiddin, dan Berwawasan Tekno-Sains."
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye text-blue-600"></i> Misi Pesantren
+                    </h3>
+                    <div id="landingMisiText" class="text-xs text-slate-600 leading-relaxed bg-blue-50/50 p-3.5 rounded-xl border border-blue-100 whitespace-pre-line">
+                        1. Menyelenggarakan pendidikan madrasah diniyah berkualitas (Awaliyah & Wustho).
+                        2. Membina hafalan Al-Qur'an dan penguasaan Kitab Kuning secara terstruktur.
+                        3. Membangun komunikasi transparan antara Pengurus, Ustadz, dan Wali Santri.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role Selection Options Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Card 1: Admin Pondok -->
+                <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-200/80 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-pondok-700 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800">1. Admin Pondok</h3>
+                        <p class="text-slate-500 text-xs mt-1 mb-4">Pengelola Utama, CMS Tampilan & PDF AI</p>
+                        <ul class="text-xs text-slate-600 space-y-2 mb-6">
+                            <li class="flex items-start"><i class="fa-solid fa-check text-emerald-500 mr-2 mt-0.5"></i> Edit Tampilan Depan / CMS Landing Page</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-emerald-500 mr-2 mt-0.5"></i> Kelola Santri (12 Kelas Awaliyah & Wustho)</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-emerald-500 mr-2 mt-0.5"></i> Kelola Akun Guru & Password Wali Santri</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-emerald-500 mr-2 mt-0.5 font-bold"></i> Pusat Pesan & Chat Seluruh Wali Santri</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-emerald-500 mr-2 mt-0.5"></i> Cetak PDF Resmi & Narasi Evaluasi AI</li>
+                        </ul>
+                    </div>
+                    <button onclick="openLoginModal('admin')" class="w-full bg-pondok-700 hover:bg-pondok-800 text-white font-semibold py-3 px-4 rounded-xl text-sm transition shadow-md flex items-center justify-center space-x-2">
+                        <span>Login Admin</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Card 2: Guru / Ustadz -->
+                <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-200/80 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800">2. Portal Guru</h3>
+                        <p class="text-slate-500 text-xs mt-1 mb-4">Pengajar & Pembina Kedisiplinan</p>
+                        <ul class="text-xs text-slate-600 space-y-2 mb-6">
+                            <li class="flex items-start"><i class="fa-solid fa-check text-blue-500 mr-2 mt-0.5"></i> Presensi Harian 12 Kelas (H, S, I, A)</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-blue-500 mr-2 mt-0.5"></i> Input Pelanggaran & AI Sanksi Mendidik</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-blue-500 mr-2 mt-0.5 font-bold"></i> Fitur Chat Direct dengan Wali Santri</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-blue-500 mr-2 mt-0.5 font-bold"></i> Draf Balasan Chat Otomatis via AI</li>
+                        </ul>
+                    </div>
+                    <button onclick="openLoginModal('guru')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl text-sm transition shadow-md flex items-center justify-center space-x-2">
+                        <span>Login Guru</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Card 3: Wali Santri -->
+                <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-200/80 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-users-between-lines"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800">3. Wali Santri</h3>
+                        <p class="text-slate-500 text-xs mt-1 mb-4">Orang Tua / Wali Murid</p>
+                        <ul class="text-xs text-slate-600 space-y-2 mb-6">
+                            <li class="flex items-start"><i class="fa-solid fa-check text-purple-500 mr-2 mt-0.5"></i> Pantau Presensi Santri (H, S, I, A)</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-purple-500 mr-2 mt-0.5"></i> Lihat Record Pelanggaran & Sanksi</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-purple-500 mr-2 mt-0.5 font-bold"></i> Chat Direct ke Admin / Ustadz Pengampu</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-purple-500 mr-2 mt-0.5 font-bold"></i> AI Konsultasi Parenting Islami</li>
+                        </ul>
+                    </div>
+                    <button onclick="openLoginModal('wali')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-xl text-sm transition shadow-md flex items-center justify-center space-x-2">
+                        <span>Login Wali Santri</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- 2. APPLICATION DASHBOARDS CONTAINER -->
+        <div id="appContainer" class="hidden space-y-6">
+            
+            <!-- ADMIN PONDOK APPLICATION VIEW -->
+            <div id="adminView" class="hidden space-y-6">
+                <!-- Navigation Tabs Admin (INCLUDES NEW CMS TAB) -->
+                <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-1.5 text-xs sm:text-sm">
+                    <button onclick="switchAdminTab('santri')" id="adminTab-santri" class="admin-tab-btn flex-1 min-w-[110px] py-2.5 px-3 rounded-xl font-semibold transition flex items-center justify-center space-x-1.5 bg-pondok-700 text-white">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <span>Data Santri</span>
+                    </button>
+                    <button onclick="switchAdminTab('cms')" id="adminTab-cms" class="admin-tab-btn flex-1 min-w-[130px] py-2.5 px-3 rounded-xl font-semibold transition flex items-center justify-center space-x-1.5 hover:bg-slate-100 text-slate-600 bg-amber-50 text-amber-800 font-bold border border-amber-200/80">
+                        <i class="fa-solid fa-sliders text-amber-600"></i>
+                        <span>Edit Tampilan Awal (CMS)</span>
+                    </button>
+                    <button onclick="switchAdminTab('guru')" id="adminTab-guru" class="admin-tab-btn flex-1 min-w-[110px] py-2.5 px-3 rounded-xl font-semibold transition flex items-center justify-center space-x-1.5 hover:bg-slate-100 text-slate-600">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                        <span>Akun Guru</span>
+                    </button>
+                    <button onclick="switchAdminTab('wali')" id="adminTab-wali" class="admin-tab-btn flex-1 min-w-[110px] py-2.5 px-3 rounded-xl font-semibold transition flex items-center justify-center space-x-1.5 hover:bg-slate-100 text-slate-600">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Akun Wali Santri</span>
+                    </button>
+                    <button onclick="switchAdminTab('pelanggaran')" id="adminTab-pelanggaran" class="admin-tab-btn flex-1 min-w-[110px] py-2.5 px-3 rounded-xl font-semibold transition flex items-center justify-center space-x-1.5 hover:bg-slate-100 text-slate-600">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Pelanggaran</span>
+                    </button>
+                    <button onclick="switchAdminTab('rekap')" id="adminTab-rekap" class="admin-tab-btn flex-1 min-w-[110px] py-2.5 px-3 rounded-xl font-semibold transition flex items-center justify-center space-x-1.5 hover:bg-slate-100 text-slate-600">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <span>Rekap Absen</span>
+                    </button>
+                    <button onclick="switchAdminTab('chat')" id="adminTab-chat" class="admin-tab-btn flex-1 min-w-[120px] py-2.5 px-3 rounded-xl font-semibold transition flex items-center justify-center space-x-1.5 hover:bg-slate-100 text-slate-600 relative">
+                        <i class="fa-solid fa-comments"></i>
+                        <span>Pesan Wali</span>
+                        <span id="adminUnreadBadge" class="hidden bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">0</span>
+                    </button>
+                    <button onclick="switchAdminTab('laporan')" id="adminTab-laporan" class="admin-tab-btn flex-1 min-w-[120px] py-2.5 px-3 rounded-xl font-semibold transition flex items-center justify-center space-x-1.5 hover:bg-slate-100 text-slate-600">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Cetak PDF + AI</span>
+                    </button>
+                </div>
+
+                <!-- NEW ADMIN SECTION: EDIT TAMPILAN AWAL (CMS HALAMAN DEPAN) -->
+                <div id="adminContent-cms" class="admin-content-sec hidden space-y-4">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                                    <i class="fa-solid fa-sliders text-amber-500"></i>
+                                    <span>Pengaturan CMS Tampilan Halaman Depan</span>
+                                </h3>
+                                <p class="text-xs text-slate-500">Ubah seluruh teks, pengumuman running banner, visi-misi, dan kontak yang muncul di halaman awal publik.</p>
+                            </div>
+                            <button onclick="resetLandingCMSToDefault()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center space-x-1">
+                                <i class="fa-solid fa-rotate-left"></i>
+                                <span>Reset Bawaan Pesantren</span>
+                            </button>
+                        </div>
+
+                        <form onsubmit="handleSaveCMS(event)" class="space-y-4 text-xs">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Nama Pesantren:</label>
+                                    <input type="text" id="cmsNamaPesantren" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Tagline / Subtitle Header:</label>
+                                    <input type="text" id="cmsTagline" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Teks Running Alert Banner (Pengumuman Berjalan):</label>
+                                <input type="text" id="cmsRunningBanner" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold">
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Judul Hero Banner Depan:</label>
+                                    <input type="text" id="cmsHeroTitle" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Class Ikon Hero FontAwesome:</label>
+                                    <input type="text" id="cmsHeroIconClass" required placeholder="fa-solid fa-mosque" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Deskripsi Sambutan Utama (Hero Description):</label>
+                                <textarea id="cmsHeroDesc" rows="3" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Visi Pesantren:</label>
+                                    <textarea id="cmsVisi" rows="3" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Misi Pesantren:</label>
+                                    <textarea id="cmsMisi" rows="3" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Alamat Lengkap Pesantren:</label>
+                                    <input type="text" id="cmsAlamat" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Nomor Telepon / WA:</label>
+                                    <input type="text" id="cmsTelpWA" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Email Resmi Pesantren:</label>
+                                    <input type="email" id="cmsEmail" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span>Simpan Perubahan Tampilan Depan</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ADMIN SECTION: DATA SANTRI -->
+                <div id="adminContent-santri" class="admin-content-sec space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Kelola Data Santri</h3>
+                            <p class="text-xs text-slate-500">Daftar seluruh santri (12 Kelas: Santriwan & Santriwati)</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <select id="filterSantriGender" onchange="renderAdminSantriTable()" class="bg-slate-50 border border-slate-300 rounded-xl text-xs py-2 px-3 focus:outline-none font-semibold">
+                                <option value="ALL">Semua Gender</option>
+                                <option value="Santriwan">Santriwan (Putra)</option>
+                                <option value="Santriwati">Santriwati (Putri)</option>
+                            </select>
+                            <select id="filterSantriKelas" onchange="renderAdminSantriTable()" class="bg-slate-50 border border-slate-300 rounded-xl text-xs py-2 px-3 focus:outline-none font-semibold">
+                                <option value="ALL">Semua Kelas (12 Kelas)</option>
+                                <optgroup label="Santriwan (Putra)">
+                                    <option value="1 Awaliyah (Santriwan)">1 Awaliyah (Santriwan)</option>
+                                    <option value="2 Awaliyah (Santriwan)">2 Awaliyah (Santriwan)</option>
+                                    <option value="3 Awaliyah (Santriwan)">3 Awaliyah (Santriwan)</option>
+                                    <option value="1 Wustho (Santriwan)">1 Wustho (Santriwan)</option>
+                                    <option value="2 Wustho (Santriwan)">2 Wustho (Santriwan)</option>
+                                    <option value="3 Wustho (Santriwan)">3 Wustho (Santriwan)</option>
+                                </optgroup>
+                                <optgroup label="Santriwati (Putri)">
+                                    <option value="1 Awaliyah (Santriwati)">1 Awaliyah (Santriwati)</option>
+                                    <option value="2 Awaliyah (Santriwati)">2 Awaliyah (Santriwati)</option>
+                                    <option value="3 Awaliyah (Santriwati)">3 Awaliyah (Santriwati)</option>
+                                    <option value="1 Wustho (Santriwati)">1 Wustho (Santriwati)</option>
+                                    <option value="2 Wustho (Santriwati)">2 Wustho (Santriwati)</option>
+                                    <option value="3 Wustho (Santriwati)">3 Wustho (Santriwati)</option>
+                                </optgroup>
+                            </select>
+                            <button onclick="openModalTambahSantri()" class="bg-pondok-700 hover:bg-pondok-800 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Tambah Santri</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stat Summary Cards Admin -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-2">
+                        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] text-slate-500 font-semibold">Santriwan (Putra)</p>
+                                <h4 id="statTotalSantriwan" class="text-xl font-black text-blue-700">0</h4>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-person"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] text-slate-500 font-semibold">Santriwati (Putri)</p>
+                                <h4 id="statTotalSantriwati" class="text-xl font-black text-purple-700">0</h4>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-person-dress"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] text-slate-500 font-semibold">Total Ustadz/Guru</p>
+                                <h4 id="statTotalGuru" class="text-xl font-black text-emerald-700">0</h4>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-chalkboard-user"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] text-slate-500 font-semibold">Catatan Pelanggaran</p>
+                                <h4 id="statTotalPelanggaran" class="text-xl font-black text-rose-700">0</h4>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3.5">NIS</th>
+                                    <th class="p-3.5">Nama Santri</th>
+                                    <th class="p-3.5">Gender</th>
+                                    <th class="p-3.5">Kelas</th>
+                                    <th class="p-3.5">Wali Santri</th>
+                                    <th class="p-3.5 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableSantriBody" class="divide-y divide-slate-100">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN SECTION: DATA GURU -->
+                <div id="adminContent-guru" class="admin-content-sec hidden space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Kelola Akun Guru / Ustadz</h3>
+                            <p class="text-xs text-slate-500">Membuat dan mengolah akses login & alokasi kelas mengajar pengajar pesantren</p>
+                        </div>
+                        <button onclick="openModalTambahGuru()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Tambah Guru Baru</span>
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3.5">Nama Guru</th>
+                                    <th class="p-3.5">Username Login</th>
+                                    <th class="p-3.5">Mata Pelajaran / Tugas</th>
+                                    <th class="p-3.5">Alokasi Kelas Mengajar</th>
+                                    <th class="p-3.5">No. Telp</th>
+                                    <th class="p-3.5 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableGuruBody" class="divide-y divide-slate-100">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN SECTION: DATA WALI SANTRI -->
+                <div id="adminContent-wali" class="admin-content-sec hidden space-y-4">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <h3 class="text-lg font-bold text-slate-800">Kelola Akun & Reset Password Wali Santri</h3>
+                        <p class="text-xs text-slate-500">Akun Wali Santri di-generate otomatis menggunakan NIS Santri sebagai Username</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3.5">NIS (Username)</th>
+                                    <th class="p-3.5">Nama Santri</th>
+                                    <th class="p-3.5">Nama Wali</th>
+                                    <th class="p-3.5">Kontak Wali</th>
+                                    <th class="p-3.5">Password Saat Ini</th>
+                                    <th class="p-3.5 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableWaliBody" class="divide-y divide-slate-100">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN SECTION: PELANGGARAN -->
+                <div id="adminContent-pelanggaran" class="admin-content-sec hidden space-y-4">
+                    <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Catatan Pelanggaran & Sanksi Santri</h3>
+                            <p class="text-xs text-slate-500">Rekapitulasi seluruh kedisiplinan dan hukuman mendidik</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3.5">Tanggal</th>
+                                    <th class="p-3.5">Nama Santri</th>
+                                    <th class="p-3.5">Kelas</th>
+                                    <th class="p-3.5">Pelanggaran</th>
+                                    <th class="p-3.5">Tingkat</th>
+                                    <th class="p-3.5">Sanksi</th>
+                                    <th class="p-3.5 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablePelanggaranAdminBody" class="divide-y divide-slate-100">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN SECTION: REKAP ABSENSI -->
+                <div id="adminContent-rekap" class="admin-content-sec hidden space-y-4">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Rekapitulasi Kehadiran Santri</h3>
+                            <p class="text-xs text-slate-500">Statistik presensi santri (Hadir, Sakit, Izin, Alpha)</p>
+                        </div>
+                        <select id="rekapKelasFilter" onchange="renderAdminRekapAbsen()" class="bg-slate-50 border border-slate-300 rounded-xl text-xs py-2 px-3">
+                            <option value="ALL">Semua Kelas (12 Kelas)</option>
+                            <optgroup label="Santriwan (Putra)">
+                                <option value="1 Awaliyah (Santriwan)">1 Awaliyah (Santriwan)</option>
+                                <option value="2 Awaliyah (Santriwan)">2 Awaliyah (Santriwan)</option>
+                                <option value="3 Awaliyah (Santriwan)">3 Awaliyah (Santriwan)</option>
+                                <option value="1 Wustho (Santriwan)">1 Wustho (Santriwan)</option>
+                                <option value="2 Wustho (Santriwan)">2 Wustho (Santriwan)</option>
+                                <option value="3 Wustho (Santriwan)">3 Wustho (Santriwan)</option>
+                            </optgroup>
+                            <optgroup label="Santriwati (Putri)">
+                                <option value="1 Awaliyah (Santriwati)">1 Awaliyah (Santriwati)</option>
+                                <option value="2 Awaliyah (Santriwati)">2 Awaliyah (Santriwati)</option>
+                                <option value="3 Awaliyah (Santriwati)">3 Awaliyah (Santriwati)</option>
+                                <option value="1 Wustho (Santriwati)">1 Wustho (Santriwati)</option>
+                                <option value="2 Wustho (Santriwati)">2 Wustho (Santriwati)</option>
+                                <option value="3 Wustho (Santriwati)">3 Wustho (Santriwati)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3.5">NIS</th>
+                                    <th class="p-3.5">Nama Santri</th>
+                                    <th class="p-3.5">Kelas</th>
+                                    <th class="p-3.5 text-emerald-600 font-bold">Hadir (H)</th>
+                                    <th class="p-3.5 text-amber-600 font-bold">Sakit (S)</th>
+                                    <th class="p-3.5 text-blue-600 font-bold">Izin (I)</th>
+                                    <th class="p-3.5 text-rose-600 font-bold">Alpha (A)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableRekapAbsenBody" class="divide-y divide-slate-100">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN SECTION: PESAN & CHAT WALI SANTRI -->
+                <div id="adminContent-chat" class="admin-content-sec hidden space-y-4">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 min-h-[500px] overflow-hidden">
+                        <!-- Sidebar Contact List Wali -->
+                        <div class="border-b md:border-b-0 md:border-r border-slate-200 p-4 space-y-3 bg-slate-50">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center justify-between">
+                                <span class="flex items-center gap-2"><i class="fa-solid fa-comments text-emerald-600"></i> Chat Wali Santri</span>
+                            </h3>
+                            <div id="adminWaliContactList" class="space-y-2 overflow-y-auto max-h-[420px]">
+                                <!-- Dynamic Contacts -->
+                            </div>
+                        </div>
+
+                        <!-- Active Chat Box Area Admin -->
+                        <div class="md:col-span-2 flex flex-col justify-between p-4 bg-white">
+                            <!-- Chat Header -->
+                            <div id="adminChatHeader" class="border-b border-slate-100 pb-3 mb-3 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <h4 id="adminChatActiveTitle" class="font-bold text-sm text-slate-800">Pilih Percakapan Wali Santri</h4>
+                                        <p id="adminChatActiveSub" class="text-[11px] text-slate-400">Pilih salah satu wali di samping untuk memulai pesan</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chat Messages Thread -->
+                            <div id="adminChatMessagesArea" class="flex-grow overflow-y-auto space-y-3 p-2 text-xs max-h-[350px]">
+                                <div class="text-center text-slate-400 py-12">
+                                    <i class="fa-solid fa-comments text-4xl mb-2 text-slate-300"></i>
+                                    <p>Silakan pilih kontak Wali Santri di panel kiri.</p>
+                                </div>
+                            </div>
+
+                            <!-- Chat Input & AI Assistant for Admin -->
+                            <div class="border-t border-slate-100 pt-3 mt-2 space-y-2">
+                                <div class="flex justify-between items-center text-xs">
+                                    <button onclick="generateAiChatReplyDraft('admin')" id="btnAiDraftAdmin" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center space-x-1 transition">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                        <span>Bantu Draf Balasan AI</span>
+                                    </button>
+                                </div>
+                                <form onsubmit="handleAdminSendMessage(event)" class="flex gap-2">
+                                    <input type="text" id="adminChatInput" placeholder="Ketik balasan untuk Wali Santri..." required class="flex-grow bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center space-x-1">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                        <span>Kirim</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADMIN SECTION: CETAK LAPORAN PDF + AI NARRATIVE GENERATOR -->
+                <div id="adminContent-laporan" class="admin-content-sec hidden space-y-4">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-2xl mx-auto space-y-5">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                                <i class="fa-solid fa-file-pdf text-rose-600"></i>
+                                <span>Generator Laporan PDF + Ringkasan AI</span>
+                            </h3>
+                            <p class="text-xs text-slate-500">Pilih jenis laporan dan gunakan Gemini AI untuk menuliskan narasi evaluasi perkembangan santri secara otomatis.</p>
+                        </div>
+
+                        <div class="space-y-4 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Jenis Laporan:</label>
+                                <select id="pdfReportType" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none">
+                                    <option value="santri">Laporan Data Santri Keseluruhan</option>
+                                    <option value="absen">Laporan Rekapitulasi Presensi Santri</option>
+                                    <option value="pelanggaran">Laporan Catatan Pelanggaran Santri</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Filter Gender Santri:</label>
+                                    <select id="pdfGenderFilter" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none">
+                                        <option value="ALL">Semua Gender</option>
+                                        <option value="Santriwan">Santriwan (Putra)</option>
+                                        <option value="Santriwati">Santriwati (Putri)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Filter Tingkat Kelas:</label>
+                                    <select id="pdfClassFilter" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none">
+                                        <option value="ALL">Semua Tingkat Kelas (12 Kelas)</option>
+                                        <optgroup label="Santriwan (Putra)">
+                                            <option value="1 Awaliyah (Santriwan)">1 Awaliyah (Santriwan)</option>
+                                            <option value="2 Awaliyah (Santriwan)">2 Awaliyah (Santriwan)</option>
+                                            <option value="3 Awaliyah (Santriwan)">3 Awaliyah (Santriwan)</option>
+                                            <option value="1 Wustho (Santriwan)">1 Wustho (Santriwan)</option>
+                                            <option value="2 Wustho (Santriwan)">2 Wustho (Santriwan)</option>
+                                            <option value="3 Wustho (Santriwan)">3 Wustho (Santriwan)</option>
+                                        </optgroup>
+                                        <optgroup label="Santriwati (Putri)">
+                                            <option value="1 Awaliyah (Santriwati)">1 Awaliyah (Santriwati)</option>
+                                            <option value="2 Awaliyah (Santriwati)">2 Awaliyah (Santriwati)</option>
+                                            <option value="3 Awaliyah (Santriwati)">3 Awaliyah (Santriwati)</option>
+                                            <option value="1 Wustho (Santriwati)">1 Wustho (Santriwati)</option>
+                                            <option value="2 Wustho (Santriwati)">2 Wustho (Santriwati)</option>
+                                            <option value="3 Wustho (Santriwati)">3 Wustho (Santriwati)</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Gemini AI Executive Summary Box -->
+                            <div class="bg-emerald-50/80 border border-emerald-200 p-4 rounded-xl space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-emerald-800 flex items-center gap-1.5 text-xs">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-emerald-600"></i>
+                                        Catatan / Narasi Evaluasi Gemini AI
+                                    </span>
+                                    <button type="button" onclick="generateAiPdfNarrative()" id="btnGenerateAiNarrative" class="bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition flex items-center space-x-1">
+                                        <i class="fa-solid fa-robot"></i>
+                                        <span>Buat Narasi AI</span>
+                                    </button>
+                                </div>
+                                <textarea id="pdfAiNarrativeText" rows="3" placeholder="Klik 'Buat Narasi AI' untuk menyusun ringkasan evaluasi perkembangan & rekomendasi secara otomatis via Gemini AI..." class="w-full bg-white border border-emerald-300 rounded-lg p-2.5 text-slate-700 focus:outline-none text-xs"></textarea>
+                            </div>
+
+                            <button onclick="generatePDFReport()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm">
+                                <i class="fa-solid fa-print"></i>
+                                <span>Pratinjau & Cetak PDF Resmi</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- GURU APPLICATION VIEW -->
+            <div id="guruView" class="hidden space-y-6">
+                <!-- Header Status Guru -->
+                <div class="bg-gradient-to-r from-blue-800 via-indigo-800 to-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <span class="bg-blue-500/30 text-blue-200 text-xs px-3 py-1 rounded-full border border-blue-400/30 font-semibold">Portal Guru & Pengasuh</span>
+                        <h2 class="text-2xl font-bold mt-1.5" id="guruProfileName">Ustadz Ahmad</h2>
+                        <p class="text-xs text-blue-200/80" id="guruProfileSubject">Pengajar Kitab Kuning / Fiqh</p>
+                    </div>
+                    <button onclick="openModalUbahPasswordGuru()" class="self-start md:self-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Ubah Password Guru</span>
+                    </button>
+                </div>
+
+                <!-- Guru Navigation Tabs -->
+                <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-2 text-xs sm:text-sm">
+                    <button onclick="switchGuruTab('absen')" id="guruTab-absen" class="guru-tab-btn flex-1 py-2.5 px-4 rounded-xl font-semibold transition flex items-center justify-center space-x-2 bg-blue-600 text-white shadow-sm">
+                        <i class="fa-solid fa-clipboard-user"></i>
+                        <span>Presensi Harian Santri</span>
+                    </button>
+                    <button onclick="switchGuruTab('pelanggaran')" id="guruTab-pelanggaran" class="guru-tab-btn flex-1 py-2.5 px-4 rounded-xl font-semibold transition flex items-center justify-center space-x-2 hover:bg-slate-100 text-slate-600">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>Catat Pelanggaran & AI Sanksi</span>
+                    </button>
+                    <button onclick="switchGuruTab('chat')" id="guruTab-chat" class="guru-tab-btn flex-1 py-2.5 px-4 rounded-xl font-semibold transition flex items-center justify-center space-x-2 hover:bg-slate-100 text-slate-600 relative">
+                        <i class="fa-solid fa-comments"></i>
+                        <span>Pesan Wali Santri</span>
+                        <span id="guruUnreadBadge" class="hidden bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">0</span>
+                    </button>
+                </div>
+
+                <!-- GURU: INPUT ABSENSI SANTRI -->
+                <div id="guruContent-absen" class="guru-content-sec space-y-4">
+                    <!-- Notice when no classes assigned by Admin -->
+                    <div id="guruNoClassNotice" class="hidden bg-amber-50 border border-amber-300 p-6 rounded-2xl text-amber-900 text-xs text-center space-y-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 text-3xl"></i>
+                        <h4 class="font-bold text-sm">Belum Ada Kelas Yang Dialokasikan</h4>
+                        <p class="max-w-md mx-auto">Anda belum dialokasikan untuk mengajar di kelas manapun oleh Admin Pondok. Silakan hubungi Sekretariat Admin Pondok untuk mendaftarkan alokasi kelas Anda.</p>
+                    </div>
+
+                    <div id="guruAbsenContainer" class="space-y-4">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih Kelas Mengajar Anda:</label>
+                                    <select id="guruAbsenKelas" onchange="renderGuruAbsenTable()" class="bg-slate-50 border border-slate-300 rounded-xl text-xs py-2 px-3 w-full sm:w-auto focus:outline-none font-semibold text-blue-800">
+                                        <!-- Dynamic Options assigned by Admin -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Absen:</label>
+                                    <input type="date" id="guruAbsenTanggal" class="bg-slate-50 border border-slate-300 rounded-xl text-xs py-2 px-3 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div class="flex items-center space-x-2 w-full sm:w-auto">
+                                <button onclick="setAllAttendance('H')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2.5 rounded-xl text-xs font-semibold transition">
+                                    <i class="fa-solid fa-check-double text-emerald-600 mr-1"></i> Semua Hadir
+                                </button>
+                                <button onclick="saveAbsensiBatch()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow transition flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                    <span>Simpan Presensi Kelas</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-600">
+                                <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3.5">NIS</th>
+                                        <th class="p-3.5">Nama Santri</th>
+                                        <th class="p-3.5 text-center text-emerald-600 font-bold">Hadir (H)</th>
+                                        <th class="p-3.5 text-center text-amber-600 font-bold">Sakit (S)</th>
+                                        <th class="p-3.5 text-center text-blue-600 font-bold">Izin (I)</th>
+                                        <th class="p-3.5 text-center text-rose-600 font-bold">Alpha (A)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="guruAbsenTableBody" class="divide-y divide-slate-100">
+                                    <!-- Dynamic Render -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- WALI SANTRI APPLICATION VIEW -->
+            <div id="waliView" class="hidden space-y-6">
+                <!-- Wali Card Banner -->
+                <div class="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 rounded-2xl bg-purple-500/30 border border-purple-400/30 flex items-center justify-center text-3xl font-bold text-white shadow-inner">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        <div>
+                            <span class="bg-purple-400/30 text-purple-200 text-xs px-3 py-0.5 rounded-full border border-purple-300/20 font-semibold">Portal Wali Santri</span>
+                            <h2 class="text-2xl font-bold mt-1" id="waliSantriNama">---</h2>
+                            <p class="text-xs text-purple-200/90">NIS: <span id="waliSantriNis">---</span> | Kelas: <span id="waliSantriKelas">---</span></p>
+                        </div>
+                    </div>
+
+                    <button onclick="openModalUbahPasswordWali()" class="self-start md:self-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Ubah Password Wali</span>
+                    </button>
+                </div>
+
+                <!-- Wali Navigation Tabs -->
+                <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-2 text-xs sm:text-sm">
+                    <button onclick="switchWaliTab('dashboard')" id="waliTab-dashboard" class="wali-tab-btn flex-1 py-2.5 px-4 rounded-xl font-semibold transition flex items-center justify-center space-x-2 bg-purple-600 text-white shadow-sm">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Ringkasan & Kedisiplinan</span>
+                    </button>
+                    <button onclick="switchWaliTab('chat')" id="waliTab-chat" class="wali-tab-btn flex-1 py-2.5 px-4 rounded-xl font-semibold transition flex items-center justify-center space-x-2 hover:bg-slate-100 text-slate-600">
+                        <i class="fa-solid fa-comments"></i>
+                        <span>Chat Ustadz / Admin</span>
+                    </button>
+                    <button onclick="switchWaliTab('ai')" id="waliTab-ai" class="wali-tab-btn flex-1 py-2.5 px-4 rounded-xl font-semibold transition flex items-center justify-center space-x-2 hover:bg-slate-100 text-slate-600">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>AI Parenting Islami</span>
+                    </button>
+                </div>
+
+                <!-- WALI TAB 1: DASHBOARD & PELANGGARAN -->
+                <div id="waliContent-dashboard" class="wali-content-sec space-y-6">
+                    <!-- Stats Attendance Counters A.I.S -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-slate-500 font-semibold uppercase">Hadir (H)</p>
+                                <h4 id="statHadir" class="text-2xl font-black text-emerald-600 mt-1">0</h4>
+                            </div>
+                            <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-slate-500 font-semibold uppercase">Sakit (S)</p>
+                                <h4 id="statSakit" class="text-2xl font-black text-amber-600 mt-1">0</h4>
+                            </div>
+                            <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-bed"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-slate-500 font-semibold uppercase">Izin (I)</p>
+                                <h4 id="statIzin" class="text-2xl font-black text-blue-600 mt-1">0</h4>
+                            </div>
+                            <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-envelope-open-text"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-slate-500 font-semibold uppercase">Alpha (A)</p>
+                                <h4 id="statAlpha" class="text-2xl font-black text-rose-600 mt-1">0</h4>
+                            </div>
+                            <div class="w-11 h-11 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Two Column Details: Info Santri & Pelanggaran -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Column 1: Profil Santri Info -->
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-2 text-sm flex items-center space-x-2">
+                                <i class="fa-solid fa-address-card text-purple-600"></i>
+                                <span>Detail Biodata Santri</span>
+                            </h3>
+
+                            <div class="space-y-3 text-xs">
+                                <div>
+                                    <span class="text-slate-400 block">Nama Lengkap Santri:</span>
+                                    <span id="waliDetailNama" class="font-semibold text-slate-800 text-sm">---</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">Nomor Induk Santri (NIS):</span>
+                                    <span id="waliDetailNis" class="font-mono font-semibold text-slate-700">---</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">Tingkatan Kelas:</span>
+                                    <span id="waliDetailKelas" class="font-semibold text-slate-700">---</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">Jenis Kelamin:</span>
+                                    <span id="waliDetailJk" class="font-semibold text-slate-700">---</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">Nama Orang Tua / Wali:</span>
+                                    <span id="waliDetailWali" class="font-semibold text-slate-700">---</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">Kontak No. HP:</span>
+                                    <span id="waliDetailKontak" class="font-semibold text-slate-700">---</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Catatan Pelanggaran -->
+                        <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-2 text-sm flex items-center justify-between">
+                                <span class="flex items-center space-x-2">
+                                    <i class="fa-solid fa-shield-cat text-amber-500"></i>
+                                    <span>Riwayat Catatan Pelanggaran & Sanksi</span>
+                                </span>
+                                <span id="badgePelanggaranCount" class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0 Pelanggaran</span>
+                            </h3>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs text-slate-600">
+                                    <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+                                        <tr>
+                                            <th class="p-2.5">Tanggal</th>
+                                            <th class="p-2.5">Pelanggaran</th>
+                                            <th class="p-2.5">Tingkat</th>
+                                            <th class="p-2.5">Sanksi Yang Diberikan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="waliPelanggaranTableBody" class="divide-y divide-slate-100">
+                                        <!-- Dynamic Render -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WALI TAB 2: CHAT USTADZ / ADMIN -->
+                <div id="waliContent-chat" class="wali-content-sec hidden space-y-4">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 min-h-[500px] overflow-hidden">
+                        <!-- Sidebar Recipient Selection -->
+                        <div class="border-b md:border-b-0 md:border-r border-slate-200 p-4 space-y-3 bg-slate-50">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane text-purple-600"></i> Kirim Pesan Ke:
+                            </h3>
+                            <div id="waliRecipientList" class="space-y-2">
+                                <!-- Dynamic List Admin & Teachers -->
+                            </div>
+                        </div>
+
+                        <!-- Active Chat Box Area Wali -->
+                        <div class="md:col-span-2 flex flex-col justify-between p-4 bg-white">
+                            <!-- Chat Header -->
+                            <div id="waliChatHeader" class="border-b border-slate-100 pb-3 mb-3 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-9 h-9 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">
+                                        <i class="fa-solid fa-user-tie"></i>
+                                    </div>
+                                    <div>
+                                        <h4 id="waliChatActiveTitle" class="font-bold text-sm text-slate-800">Pilih Penerima Pesan</h4>
+                                        <p id="waliChatActiveSub" class="text-[11px] text-slate-400">Pilih Admin Pondok atau Ustadz di panel kiri</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chat Messages Thread Wali -->
+                            <div id="waliChatMessagesArea" class="flex-grow overflow-y-auto space-y-3 p-2 text-xs max-h-[350px]">
+                                <div class="text-center text-slate-400 py-12">
+                                    <i class="fa-solid fa-comments text-4xl mb-2 text-slate-300"></i>
+                                    <p>Pilih Ustadz / Admin Pondok untuk memulai percakapan.</p>
+                                </div>
+                            </div>
+
+                            <!-- Chat Input Wali -->
+                            <div class="border-t border-slate-100 pt-3 mt-2">
+                                <form onsubmit="handleWaliSendMessage(event)" class="flex gap-2">
+                                    <input type="text" id="waliChatInput" placeholder="Tuliskan pesan / pertanyaan Anda untuk pengurus..." required class="flex-grow bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center space-x-1">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                        <span>Kirim Pesan</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WALI TAB 3: AI PARENTING ISLAMI -->
+                <div id="waliContent-ai" class="wali-content-sec hidden space-y-4">
+                    <div class="bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 text-white rounded-2xl p-6 shadow-xl space-y-4 max-w-3xl mx-auto">
+                        <div class="flex items-center justify-between border-b border-purple-700/50 pb-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-xl bg-purple-500/30 text-purple-300 flex items-center justify-center text-lg border border-purple-400/30 shadow-inner">
+                                    <i class="fa-solid fa-robot"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-base text-purple-100">AI Konsultasi Perkembangan & Pola Asuh Santri</h4>
+                                    <p class="text-xs text-purple-300/80">Konsultasikan motivasi anak, disiplin ibadah, dan pembinaan santri</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat History Container -->
+                        <div id="aiChatBox" class="bg-slate-950/40 rounded-xl p-4 h-64 overflow-y-auto space-y-3 border border-purple-800/40 text-xs">
+                            <div class="bg-purple-900/40 border border-purple-700/40 text-purple-100 p-3.5 rounded-xl max-w-[85%] leading-relaxed shadow-sm">
+                                Assalamu'alaikum Wali Santri. Saya adalah **Asisten Gemini AI Pesantren**. Silakan tanyakan saran seputar pola asuh Islami, memotivasi santri hafalan Al-Qur'an, atau mengatasi rindu rumah (*homesick*).
+                            </div>
+                        </div>
+
+                        <!-- Quick Suggestion Chips -->
+                        <div class="flex flex-wrap gap-1.5 text-[11px]">
+                            <button onclick="sendQuickAiQuery('Bagaimana saran terbaik mengatasi anak yang merasa rindu rumah (homesick) di awal masuk pondok?')" class="bg-purple-800/40 hover:bg-purple-700/50 text-purple-200 px-3 py-1 rounded-full border border-purple-600/30 transition">
+                                💡 Solusi Anak Homesick
+                            </button>
+                            <button onclick="sendQuickAiQuery('Bagaimana cara orang tua mendukung kedisiplinan shalat subuh santri saat liburan pesantren?')" class="bg-purple-800/40 hover:bg-purple-700/50 text-purple-200 px-3 py-1 rounded-full border border-purple-600/30 transition">
+                                💡 Motivasi Shalat Subuh
+                            </button>
+                        </div>
+
+                        <!-- Form Input Chat -->
+                        <form onsubmit="handleSendAiChat(event)" class="flex gap-2 pt-2">
+                            <input type="text" id="aiChatInput" placeholder="Tuliskan pertanyaan konsultasi Anda..." required class="flex-grow bg-slate-900 border border-purple-700/60 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-purple-400 focus:outline-none focus:border-purple-400">
+                            <button type="submit" id="btnSendAiChat" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold px-5 py-2.5 rounded-xl text-xs transition flex items-center space-x-1 shadow-md">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Kirim</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER OFFICIAL COPYRIGHT NOTICE & CONTACT INFO (DYNAMICALLY UPDATED VIA CMS) -->
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-center text-xs no-print mt-auto">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <div class="flex justify-center items-center space-x-2 text-emerald-400 font-bold">
+                <i class="fa-solid fa-kaaba"></i>
+                <span id="footerPesantrenTitle">PONDOK PESANTREN MIFTAHUL ULUM KALISAT</span>
+            </div>
+            <p id="footerCopyrightText" class="text-slate-400">
+                &copy; 2026 Pondok Pesantren Miftahul Ulum Kalisat. Hak Cipta Dilindungi Undang-Undang.
+            </p>
+            <p id="footerContactText" class="text-[11px] text-slate-500">
+                Jl. Raya Kalisat, Kecamatan Kalisat, Kabupaten Jember, Jawa Timur | Telp/WA: (0331) 567890 | Email: info@miftahululum-kalisat.sch.id
+            </p>
+        </div>
+    </footer>
+
+    <!-- PRINTABLE AREA (UNTUK CETAK PDF SERTA MENGGUNAKAN WINDOW.PRINT) -->
+    <div id="printableArea" class="hidden">
+        <div class="text-center border-b-2 border-slate-900 pb-4 mb-6 relative">
+            <h1 id="pdfHeaderTitle" class="text-2xl font-black uppercase tracking-wider text-slate-900">PONDOK PESANTREN MIFTAHUL ULUM KALISAT</h1>
+            <p id="pdfHeaderAddress" class="text-xs text-slate-700 font-medium">Jl. Raya Kalisat, Kecamatan Kalisat, Kabupaten Jember, Jawa Timur | Kode Pos 68193</p>
+            <p id="pdfHeaderContact" class="text-[11px] text-slate-600">Telp: (0331) 567890 | Website: miftahululum-kalisat.sch.id | Email: info@miftahululum-kalisat.sch.id</p>
+            <h2 id="printReportTitle" class="text-base font-bold underline mt-4 uppercase tracking-wide text-slate-900">LAPORAN REKAPITULASI PESANTREN</h2>
+            <p id="printReportSubtitle" class="text-xs text-slate-600">Tahun Ajaran 2024 / 2025</p>
+        </div>
+
+        <div id="printReportContent" class="text-xs space-y-4">
+            <!-- Dynamic Content Output -->
+        </div>
+
+        <!-- AI Narrative Section in PDF Print -->
+        <div id="printReportAiNarrative" class="hidden mt-6 bg-slate-50 border border-slate-300 p-4 rounded-lg">
+            <h4 class="font-bold text-slate-900 border-b border-slate-300 pb-1 mb-2">Evaluasi & Catatan Khusus Gemini AI:</h4>
+            <p id="printReportAiNarrativeText" class="text-xs leading-relaxed text-slate-800 whitespace-pre-line"></p>
+        </div>
+
+        <!-- Official Signatures & Stamp Placeholder -->
+        <div class="mt-10 flex justify-between items-end text-xs pt-4">
+            <div class="text-center space-y-12">
+                <p>Mengetahui,<br><span class="font-bold">Ketua Pengurus Pesantren</span></p>
+                <div>
+                    <p class="font-bold underline">( Ust. H. Ahmad Busro, S.Pd.I )</p>
+                    <p class="text-[10px] text-slate-500">NIP. 19820415 200501 1 002</p>
+                </div>
+            </div>
+
+            <!-- Official Stamp Placeholder -->
+            <div class="text-center border-2 border-dashed border-slate-300 rounded-full w-24 h-24 flex items-center justify-center text-[10px] font-bold text-slate-400 rotate-[-12deg] mx-auto opacity-70">
+                [ STEMPEL RESMI<br>PESANTREN ]
+            </div>
+
+            <div class="text-center space-y-12">
+                <p>Kalisat, Jember, <span id="printCurrentDate"></span><br><span class="font-bold">Pimpinan / Pengasuh Pondok</span></p>
+                <div>
+                    <p class="font-bold underline">( KH. Mohammad Hasan Basri, M.Pd )</p>
+                    <p class="text-[10px] text-slate-500">Pengasuh Pesantren</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 border-t border-slate-300 pt-2 text-center text-[10px] text-slate-500">
+            &copy; 2026 Pondok Pesantren Miftahul Ulum Kalisat. Hak Cipta Dilindungi Undang-Undang. Dokumen Resmi Internal Pesantren.
+        </div>
+    </div>
+
+    <!-- MODAL DIALOGS -->
+
+    <!-- CUSTOM CONFIRM MODAL (REPLACES WINDOW.CONFIRM) -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 mx-auto flex items-center justify-center text-xl mb-3">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <h3 id="confirmModalTitle" class="text-base font-bold text-slate-800 text-center mb-1">Konfirmasi Tindakan</h3>
+            <p id="confirmModalMessage" class="text-xs text-slate-500 text-center mb-6">Apakah Anda yakin ingin melanjutkan tindakan ini?</p>
+            <div class="flex space-x-2">
+                <button onclick="closeConfirmModal(false)" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-xs transition">Batal</button>
+                <button onclick="closeConfirmModal(true)" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow">Ya, Yakin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API KEY GOOGLE AI STUDIO MODAL -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('apiKeyModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="flex items-center space-x-3 mb-4">
+    <!-- MODAL TAMBAH & EDIT GURU (ADMIN) -->
+    <div id="modalGuru" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('modalGuru')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 id="modalGuruTitle" class="text-lg font-bold text-slate-800 mb-4">Buat Akun Guru / Ustadz Baru</h3>
+
+            <form onsubmit="handleSaveGuru(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="guruId">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Nama Lengkap & Gelar:</label>
+                    <input type="text" id="guruNama" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Username Login:</label>
+                    <input type="text" id="guruUsername" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Password Login:</label>
+                    <input type="text" id="guruPassword" required value="guru123" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Mata Pelajaran / Tugas Utama:</label>
+                    <input type="text" id="guruMapel" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">No. Telp / WA:</label>
+                    <input type="text" id="guruTelp" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+
+                <!-- Interactive Class Allocation Checkboxes -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Alokasi Kelas Mengajar (Centang Kelas Yang Diampu):</label>
+                    <div class="bg-slate-50 border border-slate-300 rounded-xl p-3 space-y-3">
+                        <div>
+                            <span class="font-bold text-[11px] text-blue-800 block border-b border-blue-200 pb-1 mb-1.5"><i class="fa-solid fa-mars mr-1"></i> Santriwan (Putra):</span>
+                            <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="1 Awaliyah (Santriwan)" class="rounded text-blue-600 focus:ring-blue-500">
+                                    <span>1 Awaliyah (Santriwan)</span>
+                                </label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="2 Awaliyah (Santriwan)" class="rounded text-blue-600 focus:ring-blue-500">
+                                    <span>2 Awaliyah (Santriwan)</span>
+                                </label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="3 Awaliyah (Santriwan)" class="rounded text-blue-600 focus:ring-blue-500">
+                                    <span>3 Awaliyah (Santriwan)</span>
+                                </label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="1 Wustho (Santriwan)" class="rounded text-blue-600 focus:ring-blue-500">
+                                    <span>1 Wustho (Santriwan)</span>
+                                </label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="2 Wustho (Santriwan)" class="rounded text-blue-600 focus:ring-blue-500">
+                                    <span>2 Wustho (Santriwan)</span>
+                                </label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="3 Wustho (Santriwan)" class="rounded text-blue-600 focus:ring-blue-500">
+                                    <span>3 Wustho (Santriwan)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="font-bold text-[11px] text-purple-800 block border-b border-purple-200 pb-1 mb-1.5"><i class="fa-solid fa-venus mr-1"></i> Santriwati (Putri):</span>
+                            <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="1 Awaliyah (Santriwati)" class="rounded text-purple-600 focus:ring-purple-500">
+                                    <span>1 Awaliyah (Santriwati)</span>
+                                </label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="2 Awaliyah (Santriwati)" class="rounded text-purple-600 focus:ring-purple-500">
+                                    <span>2 Awaliyah (Santriwati)</span>
+                                </label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="3 Awaliyah (Santriwati)" class="rounded text-purple-600 focus:ring-purple-500">
+                                    <span>3 Awaliyah (Santriwati)</span>
+                                </label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="1 Wustho (Santriwati)" class="rounded text-purple-600 focus:ring-purple-500">
+                                    <span>1 Wustho (Santriwati)</span>
+                                </label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="2 Wustho (Santriwati)" class="rounded text-purple-600 focus:ring-purple-500">
+                                    <span>2 Wustho (Santriwati)</span>
+                                </label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" name="guruClassCheckbox" value="3 Wustho (Santriwati)" class="rounded text-purple-600 focus:ring-purple-500">
+                                    <span>3 Wustho (Santriwati)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow transition">
+                        Simpan Akun Guru & Alokasi Kelas
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH GURU (ADMIN) -->
+    <div id="modalGuru" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('modalGuru')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Buat Akun Guru / Ustadz Baru</h3>
+
+            <form onsubmit="handleSaveGuru(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Nama Lengkap & Gelar:</label>
+                    <input type="text" id="guruNama" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Username Login:</label>
+                    <input type="text" id="guruUsername" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Password Login:</label>
+                    <input type="text" id="guruPassword" required value="guru123" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Mata Pelajaran / Tugas:</label>
+                    <input type="text" id="guruMapel" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">No. Telp / WA:</label>
+                    <input type="text" id="guruTelp" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow transition">
+                        Buat Akun Guru
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL RESET PASSWORD WALI SANTRI (ADMIN) -->
+    <div id="modalResetWali" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('modalResetWali')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-base font-bold text-slate-800 mb-2">Ubah / Reset Password Wali Santri</h3>
+            <p id="resetWaliSubtitle" class="text-xs text-slate-500 mb-4">Wali Santri: -</p>
+
+            <form onsubmit="handleSaveResetWali(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="resetWaliSantriId">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Password Baru:</label>
+                    <input type="text" id="resetWaliNewPass" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl shadow transition">
+                    Simpan Password Baru
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL UBAH PASSWORD SELF (GURU / WALI) -->
+    <div id="modalUbahPassSelf" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('modalUbahPassSelf')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-base font-bold text-slate-800 mb-4">Ubah Password Saya</h3>
+
+            <form onsubmit="handleSavePassSelf(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Password Baru:</label>
+                    <input type="password" id="selfNewPass" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition">
+                    Perbarui Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- JAVASCRIPT LOGIC & STATE MANAGEMENT -->
+    <script>
+        // ==========================================
+        // DYNAMIC LANDING PAGE CMS DATA OBJECT
+        // ==========================================
+        const defaultLandingCMS = {
+            namaPesantren: "Pondok Pesantren Miftahul Ulum Kalisat",
+            tagline: "Sistem Manajemen & Pembinaan Santri Terpadu",
+            runningBanner: "📢 PENGUMUMAN: Pendaftaran Santri Baru Tahun Ajaran 2026/2027 PP Miftahul Ulum Kalisat Telah Dibuka! | Libur Akhir Semester Dimulai Tanggal 15 Desember.",
+            heroTitle: "Sistem Informasi Pesantren & Pembinaan Santri Terpadu",
+            heroDesc: "Platform resmi pengelolaan data santri (12 Kelas Awaliyah & Wustho Putra/Putri), absensi harian, kedisiplinan, laporan PDF resmi ber-KOP Surat, serta layanan obrolan Wali Santri & konseling Gemini AI.",
+            heroIconClass: "fa-solid fa-mosque",
+            visi: "Terwujudnya Generasi Santri Berakhlakul Karimah, Unggul Dalam Ilmu Agama, Tafaqquh Fiddin, dan Berwawasan Tekno-Sains.",
+            misi: "1. Menyelenggarakan pendidikan madrasah diniyah berkualitas (Awaliyah & Wustho).\n2. Membina hafalan Al-Qur'an dan penguasaan Kitab Kuning secara terstruktur.\n3. Membangun komunikasi transparan antara Pengurus, Ustadz, dan Wali Santri.",
+            alamat: "Jl. Raya Kalisat, Kecamatan Kalisat, Kabupaten Jember, Jawa Timur (Kode Pos 68193)",
+            telpWA: "(0331) 567890 / 0812-3456-7890",
+            email: "info@miftahululum-kalisat.sch.id"
+        };
+
+        let landingCMS = { ...defaultLandingCMS };
+
+        // INITIAL DUMMY DATABASE (12 KELAS SANTRIWAN & SANTRIWATI)
+        let dbSantri = [
+            { id: 1, nis: "202401", nama: "Ahmad Fulan", kelas: "1 Awaliyah (Santriwan)", jk: "Santriwan", wali: "Bpk. Hendra", hp: "08123456789", passWali: "wali123" },
+            { id: 2, nis: "202402", nama: "Muhammad Rizky", kelas: "2 Awaliyah (Santriwan)", jk: "Santriwan", wali: "Bpk. Suparno", hp: "08139876543", passWali: "wali123" },
+            { id: 3, nis: "202403", nama: "Zayd Ibn Tsabit", kelas: "3 Awaliyah (Santriwan)", jk: "Santriwan", wali: "Bpk. Utsman", hp: "08967788990", passWali: "wali123" },
+            { id: 4, nis: "202404", nama: "Umar Al-Faruq", kelas: "1 Wustho (Santriwan)", jk: "Santriwan", wali: "Bpk. Khattab", hp: "08129988776", passWali: "wali123" },
+            { id: 5, nis: "202405", nama: "Ali bin Abi Thalib", kelas: "2 Wustho (Santriwan)", jk: "Santriwan", wali: "Bpk. Abu Thalib", hp: "08381122445", passWali: "wali123" },
+            { id: 6, nis: "202406", nama: "Bilal bin Rabah", kelas: "3 Wustho (Santriwan)", jk: "Santriwan", wali: "Bpk. Rabah", hp: "08198877665", passWali: "wali123" },
+            
+            { id: 7, nis: "202407", nama: "Aisyah Nur", kelas: "1 Awaliyah (Santriwati)", jk: "Santriwati", wali: "Bpk. Bambang", hp: "08215544332", passWali: "wali123" },
+            { id: 8, nis: "202408", nama: "Fatimah Azzahra", kelas: "2 Awaliyah (Santriwati)", jk: "Santriwati", wali: "Bpk. Mahmud", hp: "08571122334", passWali: "wali123" },
+            { id: 9, nis: "202409", nama: "Khadijah Al-Kubra", kelas: "3 Awaliyah (Santriwati)", jk: "Santriwati", wali: "Bpk. Khuwailid", hp: "08124455667", passWali: "wali123" },
+            { id: 10, nis: "202410", nama: "Maryam Binti Imran", kelas: "1 Wustho (Santriwati)", jk: "Santriwati", wali: "Bpk. Imran", hp: "08961122334", passWali: "wali123" },
+            { id: 11, nis: "202411", nama: "Ruqayyah Binti Rasulullah", kelas: "2 Wustho (Santriwati)", jk: "Santriwati", wali: "Bpk. Muhammad", hp: "08385566778", passWali: "wali123" },
+            { id: 12, nis: "202412", nama: "Ummu Kultsum", kelas: "3 Wustho (Santriwati)", jk: "Santriwati", wali: "Bpk. Zakariya", hp: "08219900112", passWali: "wali123" }
+        ];
+
+        let dbGuru = [
+            { id: 1, username: "guru1", pass: "guru123", nama: "Ustadz Ahmad", mapel: "Nahwu Shorof (Santriwan)", telp: "081211112222", assignedClasses: ["1 Awaliyah (Santriwan)", "2 Awaliyah (Santriwan)"] },
+            { id: 2, username: "guru2", pass: "guru123", nama: "Ustadz Mansur", mapel: "Tahfidz Al-Qur'an (Santriwan/wati)", telp: "081333334444", assignedClasses: ["1 Wustho (Santriwan)", "2 Wustho (Santriwan)", "3 Wustho (Santriwan)"] },
+            { id: 3, username: "guru3", pass: "guru123", nama: "Ustadzah Fatimah", mapel: "Akhlaq & Hadits (Santriwati)", telp: "085755556666", assignedClasses: ["1 Awaliyah (Santriwati)", "2 Awaliyah (Santriwati)", "3 Awaliyah (Santriwati)"] }
+        ];
+
+        let dbAbsensi = [
+            { id: 1, santriId: 1, tanggal: "2026-11-01", status: "H" },
+            { id: 2, santriId: 1, tanggal: "2026-11-02", status: "H" },
+            { id: 3, santriId: 1, tanggal: "2026-11-03", status: "S" },
+            { id: 4, santriId: 7, tanggal: "2026-11-02", status: "H" },
+            { id: 5, santriId: 8, tanggal: "2026-11-02", status: "I" }
+        ];
+
+        let dbPelanggaran = [
+            { id: 1, santriId: 1, tanggal: "2026-10-25", pelanggaran: "Terlambat Shalat Subuh Berjamaah", kategori: "Ringan", sanksi: "Membaca Al-Qur'an 1 Juz & Pembiasaan Bangun Pagi" },
+            { id: 2, santriId: 7, tanggal: "2026-10-28", pelanggaran: "Terlambat Masuk Jam Masrukiyah", kategori: "Ringan", sanksi: "Membaca Nadhom Imrithi 50 Bait" }
+        ];
+
+        // REALTIME CHAT DATABASE
+        let dbMessages = [
+            { id: 1, santriId: 1, senderRole: 'wali', recipientRole: 'guru', recipientId: 1, text: "Assalamu'alaikum Ustadz Ahmad, izin bertanya bagaimana perkembangan hafalan Al-Qur'an ananda Ahmad Fulan minggu ini?", time: "2026-11-02 09:15", readByGuru: false, readByAdmin: true, readByWali: true },
+            { id: 2, santriId: 1, senderRole: 'guru', recipientRole: 'wali', recipientId: 1, text: "Wa'alaikumussalam Bpk. Hendra. Alhamdulillah Ahmad Fulan sangat rajin, saat ini sudah menyelesaikan hafalan Juz 30 dengan lancar.", time: "2026-11-02 09:30", readByGuru: true, readByAdmin: true, readByWali: true }
+        ];
+
+        // SESSION STATE
+        let activeRole = null; // 'admin', 'guru', 'wali'
+        let currentUser = null; // object of logged in user
+        let currentModalRole = null;
+        let confirmCallback = null;
+
+        // ACTIVE CHAT SELECTION STATE
+        let selectedAdminChatSantriId = null;
+        let selectedGuruChatSantriId = null;
+        let selectedWaliRecipient = { role: 'guru', id: 1 };
+
+        // ==========================================
+        // INITIALIZATION & DYNAMIC CMS RENDER
+        // ==========================================
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            if(document.getElementById('guruAbsenTanggal')) document.getElementById('guruAbsenTanggal').value = today;
+            if(document.getElementById('guruPelanggaranTanggal')) document.getElementById('guruPelanggaranTanggal').value = today;
+            
+            // Render Dynamic CMS Text onto public view
+            renderLandingCMS();
+
+            // Check stored API key
+            const storedKey = localStorage.getItem('gemini_api_key');
+            if (storedKey && document.getElementById('inputApiKey')) {
+                document.getElementById('inputApiKey').value = storedKey;
+            }
+        }
+
+        function renderLandingCMS() {
+            // Header
+            document.getElementById('headerPesantrenBadge').innerText = landingCMS.namaPesantren;
+            document.getElementById('headerTaglineText').innerText = landingCMS.tagline;
+
+            // Landing Hero Section
+            document.getElementById('landingRunningBanner').innerText = landingCMS.runningBanner;
+            document.getElementById('landingPesantrenTitle').innerText = landingCMS.namaPesantren;
+            document.getElementById('landingHeroTitle').innerText = landingCMS.heroTitle;
+            document.getElementById('landingHeroDesc').innerText = landingCMS.heroDesc;
+            document.getElementById('landingHeroIcon').className = `${landingCMS.heroIconClass} text-[240px]`;
+
+            // Visi & Misi
+            document.getElementById('landingVisiText').innerText = `"${landingCMS.visi}"`;
+            document.getElementById('landingMisiText').innerText = landingCMS.misi;
+
+            // Footer
+            document.getElementById('footerPesantrenTitle').innerText = landingCMS.namaPesantren.toUpperCase();
+            document.getElementById('footerCopyrightText').innerText = `© 2026 ${landingCMS.namaPesantren}. Hak Cipta Dilindungi Undang-Undang.`;
+            document.getElementById('footerContactText').innerText = `${landingCMS.alamat} | Telp/WA: ${landingCMS.telpWA} | Email: ${landingCMS.email}`;
+
+            // PDF Print Kop Surat Sync
+            document.getElementById('pdfHeaderTitle').innerText = landingCMS.namaPesantren.toUpperCase();
+            document.getElementById('pdfHeaderAddress').innerText = landingCMS.alamat;
+            document.getElementById('pdfHeaderContact').innerText = `Telp/WA: ${landingCMS.telpWA} | Email: ${landingCMS.email}`;
+        }
+
+        // ==========================================
+        // GOOGLE GEMINI API CALLER WITH BACKOFF
+        // ==========================================
+        async function callGeminiAPI(userQuery, systemPrompt = "", retryCount = 0) {
+            const storedKey = localStorage.getItem('gemini_api_key') || "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${storedKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }]
+            };
+            if (systemPrompt) {
+                payload.systemInstruction = { parts: [{ text: systemPrompt }] };
+            }
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429 && retryCount < 3) {
+                        const delay = Math.pow(2, retryCount) * 1000;
+                        await new Promise(res => setTimeout(res, delay));
+                        return await callGeminiAPI(userQuery, systemPrompt, retryCount + 1);
+                    }
+                    throw new Error(`API error code: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    return candidate.content.parts[0].text;
+                } else {
+                    throw new Error("Respon AI tidak lengkap.");
+                }
+            } catch (err) {
+                if (retryCount < 2) {
+                    const delay = Math.pow(2, retryCount) * 1000;
+                    await new Promise(res => setTimeout(res, delay));
+                    return await callGeminiAPI(userQuery, systemPrompt, retryCount + 1);
+                }
+                throw err;
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bgClass = "bg-slate-800 text-white border-slate-700";
+            let icon = "fa-info-circle text-blue-400";
+
+            if (type === "success") {
+                bgClass = "bg-emerald-900/95 text-emerald-100 border-emerald-700";
+                icon = "fa-circle-check text-emerald-400";
+            } else if (type === "error") {
+                bgClass = "bg-rose-900/95 text-rose-100 border-rose-700";
+                icon = "fa-circle-exclamation text-rose-400";
+            } else if (type === "warning") {
+                bgClass = "bg-amber-900/95 text-amber-100 border-amber-700";
+                icon = "fa-triangle-exclamation text-amber-400";
+            }
+
+            toast.className = `pointer-events-auto border p-3.5 rounded-xl shadow-2xl text-xs flex items-center space-x-2.5 transform transition-all duration-300 translate-y-2 ${bgClass}`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i> <span class="font-medium">${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Custom Confirm Dialog (Replaces native confirm())
+        function customConfirm(title, message, callback) {
+            document.getElementById('confirmModalTitle').innerText = title;
+            document.getElementById('confirmModalMessage').innerText = message;
+            confirmCallback = callback;
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal(result) {
+            document.getElementById('confirmModal').classList.add('hidden');
+            if (confirmCallback) {
+                confirmCallback(result);
+                confirmCallback = null;
+            }
+        }
+
+        // API Key Settings Modal Handler
+        function openApiKeyModal() {
+            const key = localStorage.getItem('gemini_api_key') || '';
+            document.getElementById('inputApiKey').value = key;
+            document.getElementById('apiKeyModal').classList.remove('hidden');
+        }
+
+        function handleSaveApiKey(e) {
+            e.preventDefault();
+            const val = document.getElementById('inputApiKey').value.trim();
+            if (val) {
+                localStorage.setItem('gemini_api_key', val);
+                showToast("API Key Google AI Studio berhasil disimpan!", "success");
+            } else {
+                localStorage.removeItem('gemini_api_key');
+                showToast("Menggunakan API Key runtime bawaan.", "info");
+            }
+            closeModal('apiKeyModal');
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem('gemini_api_key');
+            document.getElementById('inputApiKey').value = '';
+            showToast("API Key dihapus. Kembali ke default.", "info");
+            closeModal('apiKeyModal');
+        }
+
+        // ==========================================
+        // NAVIGATION & ROLE SWITCHING
+        // ==========================================
+        function showRoleSelection() {
+            document.getElementById('portalSelectionView').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+            document.getElementById('adminView').classList.add('hidden');
+            document.getElementById('guruView').classList.add('hidden');
+            document.getElementById('waliView').classList.add('hidden');
+            document.getElementById('userBadge').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            activeRole = null;
+            currentUser = null;
+        }
+
+        function openLoginModal(role) {
+            currentModalRole = role;
+            const titleEl = document.getElementById('modalLoginTitle');
+            const iconEl = document.getElementById('modalRoleIcon');
+            const userLabel = document.getElementById('usernameLabel');
+            const usernameInput = document.getElementById('loginUsername');
+            const passwordInput = document.getElementById('loginPassword');
+
+            usernameInput.value = '';
+            passwordInput.value = '';
+
+            if (role === 'admin') {
+                titleEl.innerText = "Login Admin Pondok";
+                iconEl.className = "w-12 h-12 rounded-2xl bg-emerald-100 text-pondok-700 mx-auto flex items-center justify-center text-xl mb-2";
+                userLabel.innerText = "Username Admin:";
+            } else if (role === 'guru') {
+                titleEl.innerText = "Login Portal Guru";
+                iconEl.className = "w-12 h-12 rounded-2xl bg-blue-100 text-blue-700 mx-auto flex items-center justify-center text-xl mb-2";
+                userLabel.innerText = "Username Guru:";
+            } else if (role === 'wali') {
+                titleEl.innerText = "Login Wali Santri";
+                iconEl.className = "w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 mx-auto flex items-center justify-center text-xl mb-2";
+                userLabel.innerText = "NIS Santri (Username):";
+            }
+
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+
+            if (currentModalRole === 'admin') {
+                if (u === 'admin' && p === 'admin123') {
+                    activeRole = 'admin';
+                    currentUser = { name: "Administrator Utama" };
+                    closeModal('loginModal');
+                    launchApp();
+                    showToast("Berhasil login sebagai Admin Pondok", "success");
+                } else {
+                    showToast("Username atau Password Admin salah!", "error");
+                }
+            } else if (currentModalRole === 'guru') {
+                const foundGuru = dbGuru.find(g => g.username === u && g.pass === p);
+                if (foundGuru) {
+                    activeRole = 'guru';
+                    currentUser = foundGuru;
+                    closeModal('loginModal');
+                    launchApp();
+                    showToast(`Selamat datang, ${foundGuru.nama}`, "success");
+                } else {
+                    showToast("Username atau Password Guru tidak sesuai!", "error");
+                }
+            } else if (currentModalRole === 'wali') {
+                const foundSantri = dbSantri.find(s => s.nis === u && s.passWali === p);
+                if (foundSantri) {
+                    activeRole = 'wali';
+                    currentUser = foundSantri;
+                    closeModal('loginModal');
+                    launchApp();
+                    showToast(`Selamat datang Wali dari ${foundSantri.nama}`, "success");
+                } else {
+                    showToast("NIS Santri atau Password Wali salah!", "error");
+                }
+            }
+        }
+
+        function launchApp() {
+            document.getElementById('portalSelectionView').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            document.getElementById('userBadge').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+
+            const badgeText = document.getElementById('activeRoleText');
+
+            if (activeRole === 'admin') {
+                badgeText.innerText = "Admin: " + currentUser.name;
+                document.getElementById('adminView').classList.remove('hidden');
+                document.getElementById('guruView').classList.add('hidden');
+                document.getElementById('waliView').classList.add('hidden');
+                switchAdminTab('santri');
+                updateUnreadBadges();
+            } else if (activeRole === 'guru') {
+                badgeText.innerText = "Guru: " + currentUser.nama;
+                document.getElementById('adminView').classList.add('hidden');
+                document.getElementById('guruView').classList.remove('hidden');
+                document.getElementById('waliView').classList.add('hidden');
+                
+                document.getElementById('guruProfileName').innerText = currentUser.nama;
+                document.getElementById('guruProfileSubject').innerText = currentUser.mapel;
+                switchGuruTab('absen');
+                populateGuruSantriDropdown();
+                updateUnreadBadges();
+            } else if (activeRole === 'wali') {
+                badgeText.innerText = "Wali: " + currentUser.nama;
+                document.getElementById('adminView').classList.add('hidden');
+                document.getElementById('guruView').classList.add('hidden');
+                document.getElementById('waliView').classList.remove('hidden');
+                switchWaliTab('dashboard');
+                renderWaliDashboard();
+            }
+        }
+
+        function logout() {
+            showRoleSelection();
+            showToast("Anda telah keluar dari sistem.", "info");
+        }
+
+        function updateUnreadBadges() {
+            const unreadAdmin = dbMessages.filter(m => m.recipientRole === 'admin' && !m.readByAdmin).length;
+            const badgeAdmin = document.getElementById('adminUnreadBadge');
+            if (badgeAdmin) {
+                if (unreadAdmin > 0) {
+                    badgeAdmin.innerText = unreadAdmin;
+                    badgeAdmin.classList.remove('hidden');
+                } else {
+                    badgeAdmin.classList.add('hidden');
+                }
+            }
+
+            if (currentUser && activeRole === 'guru') {
+                const unreadGuru = dbMessages.filter(m => m.recipientRole === 'guru' && m.recipientId === currentUser.id && !m.readByGuru).length;
+                const badgeGuru = document.getElementById('guruUnreadBadge');
+                if (badgeGuru) {
+                    if (unreadGuru > 0) {
+                        badgeGuru.innerText = unreadGuru;
+                        badgeGuru.classList.remove('hidden');
+                    } else {
+                        badgeGuru.classList.add('hidden');
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // ADMIN PONDOK LOGIC & CMS EDITING
+        // ==========================================
+        function switchAdminTab(tabName) {
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+                btn.className = "admin-tab-btn flex-1 min-w-[110px] py-2.5 px-3 rounded-xl font-semibold transition flex items-center justify-center space-x-1.5 hover:bg-slate-100 text-slate-600";
+            });
+            document.querySelectorAll('.admin-content-sec').forEach(sec => sec.classList.add('hidden'));
+
+            const activeBtn = document.getElementById(`adminTab-${tabName}`);
+            activeBtn.className = "admin-tab-btn flex-1 min-w-[110px] py-2.5 px-3 rounded-xl font-semibold transition flex items-center justify-center space-x-1.5 bg-pondok-700 text-white shadow-sm";
+            
+            document.getElementById(`adminContent-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'cms') loadCMSFormValues();
+            if (tabName === 'santri') renderAdminSantriTable();
+            if (tabName === 'guru') renderAdminGuruTable();
+            if (tabName === 'wali') renderAdminWaliTable();
+            if (tabName === 'pelanggaran') renderAdminPelanggaranTable();
+            if (tabName === 'rekap') renderAdminRekapAbsen();
+            if (tabName === 'chat') renderAdminChatCenter();
+        }
+
+        function loadCMSFormValues() {
+            document.getElementById('cmsNamaPesantren').value = landingCMS.namaPesantren;
+            document.getElementById('cmsTagline').value = landingCMS.tagline;
+            document.getElementById('cmsRunningBanner').value = landingCMS.runningBanner;
+            document.getElementById('cmsHeroTitle').value = landingCMS.heroTitle;
+            document.getElementById('cmsHeroDesc').value = landingCMS.heroDesc;
+            document.getElementById('cmsHeroIconClass').value = landingCMS.heroIconClass;
+            document.getElementById('cmsVisi').value = landingCMS.visi;
+            document.getElementById('cmsMisi').value = landingCMS.misi;
+            document.getElementById('cmsAlamat').value = landingCMS.alamat;
+            document.getElementById('cmsTelpWA').value = landingCMS.telpWA;
+            document.getElementById('cmsEmail').value = landingCMS.email;
+        }
+
+        function handleSaveCMS(e) {
+            e.preventDefault();
+            landingCMS.namaPesantren = document.getElementById('cmsNamaPesantren').value.trim();
+            landingCMS.tagline = document.getElementById('cmsTagline').value.trim();
+            landingCMS.runningBanner = document.getElementById('cmsRunningBanner').value.trim();
+            landingCMS.heroTitle = document.getElementById('cmsHeroTitle').value.trim();
+            landingCMS.heroDesc = document.getElementById('cmsHeroDesc').value.trim();
+            landingCMS.heroIconClass = document.getElementById('cmsHeroIconClass').value.trim();
+            landingCMS.visi = document.getElementById('cmsVisi').value.trim();
+            landingCMS.misi = document.getElementById('cmsMisi').value.trim();
+            landingCMS.alamat = document.getElementById('cmsAlamat').value.trim();
+            landingCMS.telpWA = document.getElementById('cmsTelpWA').value.trim();
+            landingCMS.email = document.getElementById('cmsEmail').value.trim();
+
+            renderLandingCMS();
+            showToast("Tampilan Depan (CMS) Berhasil Diperbarui secara Real-Time!", "success");
+        }
+
+        function resetLandingCMSToDefault() {
+            customConfirm("Reset Tampilan Halaman Depan", "Apakah Anda yakin ingin mengembalikan seluruh teks tampilan depan ke bawaan pesantren?", function(yes) {
+                if (yes) {
+                    landingCMS = { ...defaultLandingCMS };
+                    loadCMSFormValues();
+                    renderLandingCMS();
+                    showToast("Tampilan Halaman Depan dikembalikan ke bawaan pesantren.", "info");
+                }
+            });
+        }
+
+        function renderAdminSantriTable() {
+            const tbody = document.getElementById('tableSantriBody');
+            const filterGender = document.getElementById('filterSantriGender').value;
+            const filterKelas = document.getElementById('filterSantriKelas').value;
+            tbody.innerHTML = '';
+
+            let list = dbSantri;
+            if (filterGender !== 'ALL') list = list.filter(s => s.jk === filterGender);
+            if (filterKelas !== 'ALL') list = list.filter(s => s.kelas === filterKelas);
+
+            document.getElementById('statTotalSantriwan').innerText = dbSantri.filter(s => s.jk === 'Santriwan').length;
+            document.getElementById('statTotalSantriwati').innerText = dbSantri.filter(s => s.jk === 'Santriwati').length;
+            document.getElementById('statTotalGuru').innerText = dbGuru.length;
+            document.getElementById('statTotalPelanggaran').innerText = dbPelanggaran.length;
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data santri untuk filter ini</td></tr>`;
+                return;
+            }
+
+            list.forEach(s => {
+                const isSantriwan = s.jk === 'Santriwan';
+                const genderBadge = isSantriwan 
+                    ? `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-mars mr-1"></i>Santriwan</span>`
+                    : `<span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-venus mr-1"></i>Santriwati</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3.5 font-mono font-semibold text-slate-700">${s.nis}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${s.nama}</td>
+                    <td class="p-3.5">${genderBadge}</td>
+                    <td class="p-3.5"><span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">${s.kelas}</span></td>
+                    <td class="p-3.5">${s.wali} <span class="text-slate-400">(${s.hp})</span></td>
+                    <td class="p-3.5 text-center space-x-2">
+                        <button onclick="editSantri(${s.id})" class="text-blue-600 hover:text-blue-800 font-semibold text-xs"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="deleteSantri(${s.id})" class="text-rose-600 hover:text-rose-800 font-semibold text-xs"><i class="fa-solid fa-trash"></i> Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateModalSantriKelasOptions() {
+            const gender = document.getElementById('santriJk').value;
+            const kelasSelect = document.getElementById('santriKelas');
+            kelasSelect.innerHTML = '';
+
+            const classes = gender === 'Santriwan' ? [
+                "1 Awaliyah (Santriwan)", "2 Awaliyah (Santriwan)", "3 Awaliyah (Santriwan)",
+                "1 Wustho (Santriwan)", "2 Wustho (Santriwan)", "3 Wustho (Santriwan)"
+            ] : [
+                "1 Awaliyah (Santriwati)", "2 Awaliyah (Santriwati)", "3 Awaliyah (Santriwati)",
+                "1 Wustho (Santriwati)", "2 Wustho (Santriwati)", "3 Wustho (Santriwati)"
+            ];
+
+            classes.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.innerText = c;
+                kelasSelect.appendChild(opt);
+            });
+        }
+
+        function openModalTambahSantri() {
+            document.getElementById('santriId').value = '';
+            document.getElementById('santriNis').value = '';
+            document.getElementById('santriNama').value = '';
+            document.getElementById('santriJk').value = 'Santriwan';
+            updateModalSantriKelasOptions();
+            document.getElementById('santriWali').value = '';
+            document.getElementById('santriKontak').value = '';
+            document.getElementById('modalSantriTitle').innerText = "Tambah Data Santri Baru";
+            document.getElementById('modalSantri').classList.remove('hidden');
+        }
+
+        function editSantri(id) {
+            const s = dbSantri.find(item => item.id === id);
+            if (!s) return;
+            document.getElementById('santriId').value = s.id;
+            document.getElementById('santriNis').value = s.nis;
+            document.getElementById('santriNama').value = s.nama;
+            document.getElementById('santriJk').value = s.jk;
+            updateModalSantriKelasOptions();
+            document.getElementById('santriKelas').value = s.kelas;
+            document.getElementById('santriWali').value = s.wali;
+            document.getElementById('santriKontak').value = s.hp;
+            document.getElementById('modalSantriTitle').innerText = "Edit Data Santri";
+            document.getElementById('modalSantri').classList.remove('hidden');
+        }
+
+        function handleSaveSantri(e) {
+            e.preventDefault();
+            const id = document.getElementById('santriId').value;
+            const nis = document.getElementById('santriNis').value.trim();
+            const nama = document.getElementById('santriNama').value.trim();
+            const jk = document.getElementById('santriJk').value;
+            const kelas = document.getElementById('santriKelas').value;
+            const wali = document.getElementById('santriWali').value.trim();
+            const hp = document.getElementById('santriKontak').value.trim();
+
+            if (id) {
+                const idx = dbSantri.findIndex(s => s.id == id);
+                if (idx !== -1) {
+                    dbSantri[idx] = { ...dbSantri[idx], nis, nama, jk, kelas, wali, hp };
+                    showToast("Data santri berhasil diperbarui!", "success");
+                }
+            } else {
+                const newId = dbSantri.length > 0 ? Math.max(...dbSantri.map(s => s.id)) + 1 : 1;
+                dbSantri.push({ id: newId, nis, nama, jk, kelas, wali, hp, passWali: "wali123" });
+                showToast("Santri baru berhasil ditambahkan!", "success");
+            }
+            closeModal('modalSantri');
+            renderAdminSantriTable();
+        }
+
+        function deleteSantri(id) {
+            const s = dbSantri.find(item => item.id === id);
+            if (!s) return;
+            customConfirm("Hapus Santri", `Apakah Anda yakin ingin menghapus data santri ${s.nama} (${s.nis})?`, function(yes) {
+                if (yes) {
+                    dbSantri = dbSantri.filter(item => item.id !== id);
+                    renderAdminSantriTable();
+                    showToast("Data santri telah dihapus.", "info");
+                }
+            });
+        }
+
+        function renderAdminGuruTable() {
+            const tbody = document.getElementById('tableGuruBody');
+            tbody.innerHTML = '';
+            dbGuru.forEach(g => {
+                const assigned = g.assignedClasses || [];
+                let classBadges = '<span class="text-slate-400 italic text-[11px]">Belum ada kelas</span>';
+                if (assigned.length > 0) {
+                    classBadges = assigned.map(c => `<span class="inline-block bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2 py-0.5 rounded font-semibold m-0.5">${c}</span>`).join('');
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3.5 font-bold text-slate-800">${g.nama}</td>
+                    <td class="p-3.5 font-mono text-blue-700 font-semibold">${g.username}</td>
+                    <td class="p-3.5">${g.mapel}</td>
+                    <td class="p-3.5 max-w-xs">${classBadges}</td>
+                    <td class="p-3.5">${g.telp}</td>
+                    <td class="p-3.5 text-center space-x-2">
+                        <button onclick="editGuru(${g.id})" class="text-blue-600 hover:text-blue-800 font-semibold text-xs"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="deleteGuru(${g.id})" class="text-rose-600 hover:text-rose-800 font-semibold text-xs"><i class="fa-solid fa-trash"></i> Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openModalTambahGuru() {
+            document.getElementById('guruId').value = '';
+            document.getElementById('guruNama').value = '';
+            document.getElementById('guruUsername').value = '';
+            document.getElementById('guruPassword').value = 'guru123';
+            document.getElementById('guruMapel').value = '';
+            document.getElementById('guruTelp').value = '';
+            document.querySelectorAll('input[name="guruClassCheckbox"]').forEach(cb => cb.checked = false);
+            document.getElementById('modalGuruTitle').innerText = "Buat Akun Guru & Alokasi Kelas";
+            document.getElementById('modalGuru').classList.remove('hidden');
+        }
+
+        function editGuru(id) {
+            const g = dbGuru.find(item => item.id === id);
+            if (!g) return;
+            document.getElementById('guruId').value = g.id;
+            document.getElementById('guruNama').value = g.nama;
+            document.getElementById('guruUsername').value = g.username;
+            document.getElementById('guruPassword').value = g.pass;
+            document.getElementById('guruMapel').value = g.mapel;
+            document.getElementById('guruTelp').value = g.telp;
+
+            const assigned = g.assignedClasses || [];
+            document.querySelectorAll('input[name="guruClassCheckbox"]').forEach(cb => {
+                cb.checked = assigned.includes(cb.value);
+            });
+
+            document.getElementById('modalGuruTitle').innerText = "Edit Akun Guru & Alokasi Kelas";
+            document.getElementById('modalGuru').classList.remove('hidden');
+        }
+
+        function handleSaveGuru(e) {
+            e.preventDefault();
+            const id = document.getElementById('guruId').value;
+            const nama = document.getElementById('guruNama').value.trim();
+            const username = document.getElementById('guruUsername').value.trim();
+            const pass = document.getElementById('guruPassword').value.trim();
+            const mapel = document.getElementById('guruMapel').value.trim();
+            const telp = document.getElementById('guruTelp').value.trim();
+
+            const assignedClasses = [];
+            document.querySelectorAll('input[name="guruClassCheckbox"]:checked').forEach(cb => {
+                assignedClasses.push(cb.value);
+            });
+
+            if (id) {
+                const idx = dbGuru.findIndex(g => g.id == id);
+                if (idx !== -1) {
+                    dbGuru[idx] = { ...dbGuru[idx], username, pass, nama, mapel, telp, assignedClasses };
+                    if (activeRole === 'guru' && currentUser && currentUser.id == id) {
+                        currentUser = dbGuru[idx];
+                    }
+                    showToast("Akun Guru & Alokasi Kelas berhasil diperbarui!", "success");
+                }
+            } else {
+                const newId = dbGuru.length > 0 ? Math.max(...dbGuru.map(g => g.id)) + 1 : 1;
+                dbGuru.push({ id: newId, username, pass, nama, mapel, telp, assignedClasses });
+                showToast("Akun guru baru & alokasi kelas berhasil dibuat!", "success");
+            }
+            closeModal('modalGuru');
+            renderAdminGuruTable();
+        }
+
+        function deleteGuru(id) {
+            const g = dbGuru.find(item => item.id === id);
+            if (!g) return;
+            customConfirm("Hapus Guru", `Yakin ingin menghapus akun guru ${g.nama}?`, function(yes) {
+                if (yes) {
+                    dbGuru = dbGuru.filter(item => item.id !== id);
+                    renderAdminGuruTable();
+                    showToast("Akun guru telah dihapus.", "info");
+                }
+            });
+        }
+
+        function renderAdminWaliTable() {
+            const tbody = document.getElementById('tableWaliBody');
+            tbody.innerHTML = '';
+            dbSantri.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3.5 font-mono font-bold text-purple-700">${s.nis}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${s.nama} (${s.kelas})</td>
+                    <td class="p-3.5">${s.wali}</td>
+                    <td class="p-3.5">${s.hp}</td>
+                    <td class="p-3.5 font-mono text-xs bg-slate-100 font-semibold rounded">${s.passWali}</td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="openModalResetWali(${s.id})" class="bg-purple-50 text-purple-700 hover:bg-purple-100 px-2.5 py-1 rounded-lg font-semibold text-xs border border-purple-200"><i class="fa-solid fa-key"></i> Reset Password</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openModalResetWali(santriId) {
+            const s = dbSantri.find(item => item.id === santriId);
+            if (!s) return;
+            document.getElementById('resetWaliSantriId').value = s.id;
+            document.getElementById('resetWaliSubtitle').innerText = `Santri: ${s.nama} (NIS: ${s.nis})`;
+            document.getElementById('resetWaliNewPass').value = "wali123";
+            document.getElementById('modalResetWali').classList.remove('hidden');
+        }
+
+        function handleSaveResetWali(e) {
+            e.preventDefault();
+            const santriId = document.getElementById('resetWaliSantriId').value;
+            const newPass = document.getElementById('resetWaliNewPass').value.trim();
+            const idx = dbSantri.findIndex(s => s.id == santriId);
+            if (idx !== -1) {
+                dbSantri[idx].passWali = newPass;
+                showToast(`Password Wali Santri ${dbSantri[idx].nama} berhasil di-reset!`, "success");
+            }
+            closeModal('modalResetWali');
+            renderAdminWaliTable();
+        }
+
+        function renderAdminPelanggaranTable() {
+            const tbody = document.getElementById('tablePelanggaranAdminBody');
+            tbody.innerHTML = '';
+            if (dbPelanggaran.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada catatan pelanggaran santri</td></tr>`;
+                return;
+            }
+
+            dbPelanggaran.forEach(p => {
+                const s = dbSantri.find(item => item.id === p.santriId) || { nama: "Santri Dihapus", kelas: "-" };
+                let katBadge = `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Ringan</span>`;
+                if (p.kategori === 'Sedang') katBadge = `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Sedang</span>`;
+                if (p.kategori === 'Berat') katBadge = `<span class="bg-rose-100 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Berat</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3.5 text-slate-500">${p.tanggal}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${s.nama}</td>
+                    <td class="p-3.5"><span class="bg-slate-100 px-2 py-0.5 rounded text-[11px] font-semibold">${s.kelas}</span></td>
+                    <td class="p-3.5 font-medium text-slate-800">${p.pelanggaran}</td>
+                    <td class="p-3.5">${katBadge}</td>
+                    <td class="p-3.5 text-slate-700">${p.sanksi}</td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="deletePelanggaran(${p.id})" class="text-rose-600 hover:text-rose-800 text-xs font-semibold"><i class="fa-solid fa-trash"></i> Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deletePelanggaran(id) {
+            customConfirm("Hapus Pelanggaran", "Apakah Anda yakin ingin menghapus catatan pelanggaran ini?", function(yes) {
+                if (yes) {
+                    dbPelanggaran = dbPelanggaran.filter(p => p.id !== id);
+                    renderAdminPelanggaranTable();
+                    showToast("Catatan pelanggaran telah dihapus.", "info");
+                }
+            });
+        }
+
+        function renderAdminRekapAbsen() {
+            const tbody = document.getElementById('tableRekapAbsenBody');
+            const filterKelas = document.getElementById('rekapKelasFilter').value;
+            tbody.innerHTML = '';
+
+            let list = dbSantri;
+            if (filterKelas !== 'ALL') list = list.filter(s => s.kelas === filterKelas);
+
+            list.forEach(s => {
+                const h = dbAbsensi.filter(a => a.santriId === s.id && a.status === 'H').length;
+                const sc = dbAbsensi.filter(a => a.santriId === s.id && a.status === 'S').length;
+                const i = dbAbsensi.filter(a => a.santriId === s.id && a.status === 'I').length;
+                const a = dbAbsensi.filter(a => a.santriId === s.id && a.status === 'A').length;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3.5 font-mono text-slate-700">${s.nis}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${s.nama}</td>
+                    <td class="p-3.5"><span class="bg-emerald-50 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">${s.kelas}</span></td>
+                    <td class="p-3.5 font-bold text-emerald-600">${h} Hari</td>
+                    <td class="p-3.5 font-bold text-amber-600">${sc} Hari</td>
+                    <td class="p-3.5 font-bold text-blue-600">${i} Hari</td>
+                    <td class="p-3.5 font-bold text-rose-600">${a} Hari</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // AI PDF EXECUTIVE SUMMARY GENERATOR
+        async function generateAiPdfNarrative() {
+            const btn = document.getElementById('btnGenerateAiNarrative');
+            const txt = document.getElementById('pdfAiNarrativeText');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Menyusun AI...</span>`;
+
+            const reportType = document.getElementById('pdfReportType').value;
+            const genderFilter = document.getElementById('pdfGenderFilter').value;
+            const classFilter = document.getElementById('pdfClassFilter').value;
+
+            const prompt = `Anda adalah Sekretaris Pengurus Pondok Pesantren Miftahul Ulum Kalisat Jember.
+Buatkan 1 paragraf ringkasan evaluasi perkembangan santri dan rekomendasi pengasuhan yang santun, profesional, dan Islami untuk dilampirkan dalam Laporan Cetak PDF Resmi Pesantren.
+Parameter Laporan: Jenis: ${reportType}, Gender: ${genderFilter}, Kelas: ${classFilter}.
+Sebutkan apresiasi atas keaktifan santri dan motivasi bagi wali santri.`;
+
+            try {
+                const result = await callGeminiAPI(prompt, "Sajikan narasi resmi, singkat, padat (max 4 kalimat) dan santun.");
+                txt.value = result;
+                showToast("Narasi Evaluasi AI berhasil dibuat!", "success");
+            } catch (err) {
+                showToast("Gagal menyusun narasi AI. Pastikan jaringan terhubung.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-robot"></i> <span>Buat Narasi AI</span>`;
+            }
+        }
+
+        // ==========================================
+        // GURU / USTADZ LOGIC
+        // ==========================================
+        function switchGuruTab(tabName) {
+            document.querySelectorAll('.guru-tab-btn').forEach(btn => {
+                btn.className = "guru-tab-btn flex-1 py-2.5 px-4 rounded-xl font-semibold transition flex items-center justify-center space-x-2 hover:bg-slate-100 text-slate-600";
+            });
+            document.querySelectorAll('.guru-content-sec').forEach(sec => sec.classList.add('hidden'));
+
+            const activeBtn = document.getElementById(`guruTab-${tabName}`);
+            activeBtn.className = "guru-tab-btn flex-1 py-2.5 px-4 rounded-xl font-semibold transition flex items-center justify-center space-x-2 bg-blue-600 text-white shadow-sm";
+
+            document.getElementById(`guruContent-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'absen') {
+                populateGuruClassDropdown();
+                renderGuruAbsenTable();
+            }
+            if (tabName === 'pelanggaran') populateGuruSantriDropdown();
+            if (tabName === 'chat') renderGuruChatCenter();
+        }
+
+        function populateGuruClassDropdown() {
+            const select = document.getElementById('guruAbsenKelas');
+            const noticeEl = document.getElementById('guruNoClassNotice');
+            const containerEl = document.getElementById('guruAbsenContainer');
+
+            select.innerHTML = '';
+            const assigned = (currentUser && currentUser.assignedClasses) ? currentUser.assignedClasses : [];
+
+            if (assigned.length === 0) {
+                if (noticeEl) noticeEl.classList.remove('hidden');
+                if (containerEl) containerEl.classList.add('hidden');
+                return;
+            } else {
+                if (noticeEl) noticeEl.classList.add('hidden');
+                if (containerEl) containerEl.classList.remove('hidden');
+            }
+
+            assigned.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.innerText = c;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderGuruAbsenTable() {
+            const tbody = document.getElementById('guruAbsenTableBody');
+            const select = document.getElementById('guruAbsenKelas');
+            if (!select || !select.value) {
+                if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada kelas terpilih</td></tr>`;
+                return;
+            }
+            const kelas = select.value;
+            const tanggal = document.getElementById('guruAbsenTanggal').value;
+            tbody.innerHTML = '';
+
+            const santriList = dbSantri.filter(s => s.kelas === kelas);
+            if (santriList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada santri di kelas ${kelas}</td></tr>`;
+                return;
+            }
+
+            santriList.forEach(s => {
+                const existing = dbAbsensi.find(a => a.santriId === s.id && a.tanggal === tanggal);
+                const currentStatus = existing ? existing.status : 'H';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3.5 font-mono text-slate-700">${s.nis}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${s.nama}</td>
+                    <td class="p-3.5 text-center">
+                        <input type="radio" name="absen_${s.id}" value="H" ${currentStatus === 'H' ? 'checked' : ''} class="w-4 h-4 text-emerald-600 accent-emerald-600 cursor-pointer">
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <input type="radio" name="absen_${s.id}" value="S" ${currentStatus === 'S' ? 'checked' : ''} class="w-4 h-4 text-amber-600 accent-amber-600 cursor-pointer">
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <input type="radio" name="absen_${s.id}" value="I" ${currentStatus === 'I' ? 'checked' : ''} class="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer">
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <input type="radio" name="absen_${s.id}" value="A" ${currentStatus === 'A' ? 'checked' : ''} class="w-4 h-4 text-rose-600 accent-rose-600 cursor-pointer">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function saveAbsensiBatch() {
+            const select = document.getElementById('guruAbsenKelas');
+            if (!select || !select.value) {
+                showToast("Anda belum memilih kelas mengajar!", "error");
+                return;
+            }
+            const kelas = select.value;
+            const tanggal = document.getElementById('guruAbsenTanggal').value;
+            const santriList = dbSantri.filter(s => s.kelas === kelas);
+
+            if (!tanggal) {
+                showToast("Pilih tanggal presensi terlebih dahulu!", "error");
+                return;
+            }
+
+            santriList.forEach(s => {
+                const radios = document.getElementsByName(`absen_${s.id}`);
+                let val = 'H';
+                radios.forEach(r => { if (r.checked) val = r.value; });
+
+                const idx = dbAbsensi.findIndex(a => a.santriId === s.id && a.tanggal === tanggal);
+                if (idx !== -1) {
+                    dbAbsensi[idx].status = val;
+                } else {
+                    const newId = dbAbsensi.length > 0 ? Math.max(...dbAbsensi.map(a => a.id)) + 1 : 1;
+                    dbAbsensi.push({ id: newId, santriId: s.id, tanggal, status: val });
+                }
+            });
+
+            // Automatically sync with Admin Rekap & Wali Santri views
+            renderAdminRekapAbsen();
+            renderWaliDashboard();
+
+            showToast(`Presensi kelas ${kelas} tanggal ${tanggal} berhasil disimpan & ter-sinkronisasi!`, "success");
+        }
+
+        function renderGuruAbsenTable() {
+            const tbody = document.getElementById('guruAbsenTableBody');
+            const kelas = document.getElementById('guruAbsenKelas').value;
+            const tanggal = document.getElementById('guruAbsenTanggal').value;
+            tbody.innerHTML = '';
+
+            const santriList = dbSantri.filter(s => s.kelas === kelas);
+            if (santriList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada santri di kelas ${kelas}</td></tr>`;
+                return;
+            }
+
+            santriList.forEach(s => {
+                const existing = dbAbsensi.find(a => a.santriId === s.id && a.tanggal === tanggal);
+                const currentStatus = existing ? existing.status : 'H';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3.5 font-mono text-slate-700">${s.nis}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${s.nama}</td>
+                    <td class="p-3.5 text-center">
+                        <input type="radio" name="absen_${s.id}" value="H" ${currentStatus === 'H' ? 'checked' : ''} class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <input type="radio" name="absen_${s.id}" value="S" ${currentStatus === 'S' ? 'checked' : ''} class="w-4 h-4 text-amber-600 accent-amber-600">
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <input type="radio" name="absen_${s.id}" value="I" ${currentStatus === 'I' ? 'checked' : ''} class="w-4 h-4 text-blue-600 accent-blue-600">
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <input type="radio" name="absen_${s.id}" value="A" ${currentStatus === 'A' ? 'checked' : ''} class="w-4 h-4 text-rose-600 accent-rose-600">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function setAllAttendance(status) {
+            const kelas = document.getElementById('guruAbsenKelas').value;
+            const santriList = dbSantri.filter(s => s.kelas === kelas);
+            santriList.forEach(s => {
+                const radios = document.getElementsByName(`absen_${s.id}`);
+                radios.forEach(r => {
+                    if (r.value === status) r.checked = true;
+                });
+            });
+            showToast(`Seluruh santri kelas ${kelas} di-set ${status}`, "info");
+        }
+
+        function saveAbsensiBatch() {
+            const kelas = document.getElementById('guruAbsenKelas').value;
+            const tanggal = document.getElementById('guruAbsenTanggal').value;
+            const santriList = dbSantri.filter(s => s.kelas === kelas);
+
+            if (!tanggal) {
+                showToast("Pilih tanggal presensi terlebih dahulu!", "error");
+                return;
+            }
+
+            santriList.forEach(s => {
+                const radios = document.getElementsByName(`absen_${s.id}`);
+                let val = 'H';
+                radios.forEach(r => { if (r.checked) val = r.value; });
+
+                const idx = dbAbsensi.findIndex(a => a.santriId === s.id && a.tanggal === tanggal);
+                if (idx !== -1) {
+                    dbAbsensi[idx].status = val;
+                } else {
+                    const newId = dbAbsensi.length > 0 ? Math.max(...dbAbsensi.map(a => a.id)) + 1 : 1;
+                    dbAbsensi.push({ id: newId, santriId: s.id, tanggal, status: val });
+                }
+            });
+
+            showToast(`Presensi kelas ${kelas} tanggal ${tanggal} berhasil disimpan!`, "success");
+        }
+
+        function populateGuruSantriDropdown() {
+            const select = document.getElementById('guruPelanggaranSantriId');
+            select.innerHTML = '';
+            dbSantri.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.innerText = `${s.nama} (${s.kelas}) - NIS: ${s.nis}`;
+                select.appendChild(opt);
+            });
+        }
+
+        async function fetchAiSanctionRecommendation() {
+            const namaP = document.getElementById('guruPelanggaranNama').value.trim();
+            const kategoriP = document.getElementById('guruPelanggaranKategori').value;
+            const btn = document.getElementById('btnGetAiSanction');
+
+            if (!namaP) {
+                showToast("Ketikkan nama pelanggaran terlebih dahulu!", "warning");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Menganalisis...</span>`;
+
+            const prompt = `Santri melakukan pelanggaran: "${namaP}" dengan tingkat "${kategoriP}" di Pesantren. 
+Berikan 1 bentuk sanksi yang sangat mendidik, edukatif, Islami (misal: hafalan surah, membaca kitab, kebersihan masjid) beserta 1 kalimat nasihat bijak singkat. (Maksimal 2 kalimat total).`;
+
+            try {
+                const result = await callGeminiAPI(prompt, "Sajikan langsung jawaban ringkas sanksi mendidik.");
+                document.getElementById('guruPelanggaranSanksi').value = result;
+                showToast("Rekomendasi sanksi mendidik AI berhasil dibuat!", "success");
+            } catch (err) {
+                showToast("Gagal terhubung ke Gemini AI.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-brain"></i> <span>Dapatkan Saran AI</span>`;
+            }
+        }
+
+        function handleGuruSubmitPelanggaran(e) {
+            e.preventDefault();
+            const santriId = parseInt(document.getElementById('guruPelanggaranSantriId').value);
+            const kategori = document.getElementById('guruPelanggaranKategori').value;
+            const tanggal = document.getElementById('guruPelanggaranTanggal').value;
+            const pelanggaran = document.getElementById('guruPelanggaranNama').value.trim();
+            const sanksi = document.getElementById('guruPelanggaranSanksi').value.trim();
+
+            const newId = dbPelanggaran.length > 0 ? Math.max(...dbPelanggaran.map(p => p.id)) + 1 : 1;
+            dbPelanggaran.push({ id: newId, santriId, tanggal, pelanggaran, kategori, sanksi });
+
+            showToast("Laporan pelanggaran santri berhasil disimpan!", "success");
+            document.getElementById('guruPelanggaranNama').value = '';
+            document.getElementById('guruPelanggaranSanksi').value = '';
+        }
+
+        function openModalUbahPasswordGuru() {
+            document.getElementById('selfNewPass').value = '';
+            document.getElementById('modalUbahPassSelf').classList.remove('hidden');
+        }
+
+        function handleSavePassSelf(e) {
+            e.preventDefault();
+            const newP = document.getElementById('selfNewPass').value.trim();
+            if (activeRole === 'guru' && currentUser) {
+                const idx = dbGuru.findIndex(g => g.id === currentUser.id);
+                if (idx !== -1) dbGuru[idx].pass = newP;
+                showToast("Password Guru berhasil diperbarui!", "success");
+            } else if (activeRole === 'wali' && currentUser) {
+                const idx = dbSantri.findIndex(s => s.id === currentUser.id);
+                if (idx !== -1) dbSantri[idx].passWali = newP;
+                showToast("Password Wali Santri berhasil diperbarui!", "success");
+            }
+            closeModal('modalUbahPassSelf');
+        }
+
+        // ==========================================
+        // WALI SANTRI LOGIC & AI PARENTING
+        // ==========================================
+        function switchWaliTab(tabName) {
+            document.querySelectorAll('.wali-tab-btn').forEach(btn => {
+                btn.className = "wali-tab-btn flex-1 py-2.5 px-4 rounded-xl font-semibold transition flex items-center justify-center space-x-2 hover:bg-slate-100 text-slate-600";
+            });
+            document.querySelectorAll('.wali-content-sec').forEach(sec => sec.classList.add('hidden'));
+
+            const activeBtn = document.getElementById(`waliTab-${tabName}`);
+            activeBtn.className = "wali-tab-btn flex-1 py-2.5 px-4 rounded-xl font-semibold transition flex items-center justify-center space-x-2 bg-purple-600 text-white shadow-sm";
+
+            document.getElementById(`waliContent-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'dashboard') renderWaliDashboard();
+            if (tabName === 'chat') renderWaliChatCenter();
+        }
+
+        function renderWaliDashboard() {
+            if (!currentUser) return;
+            const s = currentUser;
+
+            document.getElementById('waliSantriNama').innerText = s.nama;
+            document.getElementById('waliSantriNis').innerText = s.nis;
+            document.getElementById('waliSantriKelas').innerText = s.kelas;
+
+            document.getElementById('waliDetailNama').innerText = s.nama;
+            document.getElementById('waliDetailNis').innerText = s.nis;
+            document.getElementById('waliDetailKelas').innerText = s.kelas;
+            document.getElementById('waliDetailJk').innerText = s.jk;
+            document.getElementById('waliDetailWali').innerText = s.wali;
+            document.getElementById('waliDetailKontak').innerText = s.hp;
+
+            const h = dbAbsensi.filter(a => a.santriId === s.id && a.status === 'H').length;
+            const sc = dbAbsensi.filter(a => a.santriId === s.id && a.status === 'S').length;
+            const i = dbAbsensi.filter(a => a.santriId === s.id && a.status === 'I').length;
+            const a = dbAbsensi.filter(a => a.santriId === s.id && a.status === 'A').length;
+
+            document.getElementById('statHadir').innerText = h;
+            document.getElementById('statSakit').innerText = sc;
+            document.getElementById('statIzin').innerText = i;
+            document.getElementById('statAlpha').innerText = a;
+
+            const myPelanggaran = dbPelanggaran.filter(p => p.santriId === s.id);
+            document.getElementById('badgePelanggaranCount').innerText = `${myPelanggaran.length} Pelanggaran`;
+
+            const tbody = document.getElementById('waliPelanggaranTableBody');
+            tbody.innerHTML = '';
+            if (myPelanggaran.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Alhamdulillah, santri memiliki catatan kedisiplinan yang sangat baik (0 Pelanggaran).</td></tr>`;
+                return;
+            }
+
+            myPelanggaran.forEach(p => {
+                let katBadge = `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Ringan</span>`;
+                if (p.kategori === 'Sedang') katBadge = `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Sedang</span>`;
+                if (p.kategori === 'Berat') katBadge = `<span class="bg-rose-100 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Berat</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-2.5 text-slate-500">${p.tanggal}</td>
+                    <td class="p-2.5 font-bold text-slate-800">${p.pelanggaran}</td>
+                    <td class="p-2.5">${katBadge}</td>
+                    <td class="p-2.5 text-slate-700">${p.sanksi}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openModalUbahPasswordWali() {
+            document.getElementById('selfNewPass').value = '';
+            document.getElementById('modalUbahPassSelf').classList.remove('hidden');
+        }
+
+        // AI PARENTING CHATBOT LOGIC
+        function sendQuickAiQuery(queryText) {
+            document.getElementById('aiChatInput').value = queryText;
+            handleSendAiChat(new Event('submit'));
+        }
+
+        async function handleSendAiChat(e) {
+            e.preventDefault();
+            const input = document.getElementById('aiChatInput');
+            const q = input.value.trim();
+            if (!q) return;
+
+            const chatBox = document.getElementById('aiChatBox');
+            const userMsg = document.createElement('div');
+            userMsg.className = "bg-purple-600 text-white p-3 rounded-xl max-w-[85%] ml-auto text-xs shadow-sm";
+            userMsg.innerText = q;
+            chatBox.appendChild(userMsg);
+
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const loadingMsg = document.createElement('div');
+            loadingMsg.className = "bg-purple-900/40 border border-purple-700/40 text-purple-200 p-3 rounded-xl max-w-[85%] text-xs animate-pulse";
+            loadingMsg.innerText = "Gemini AI sedang mengetik jawaban...";
+            chatBox.appendChild(loadingMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const systemPrompt = `Anda adalah Asisten Pakar Parenting Islami dan Pembinaan Santri Pesantren Miftahul Ulum Kalisat Jember.
+Berikan jawaban konseling yang sangat menyejukkan hati wali santri, Islami, praktis, dan memotivasi. Sebutkan doa atau ayat pendek jika relevan. Jawab singkat dan padat.`;
+
+            try {
+                const aiReply = await callGeminiAPI(q, systemPrompt);
+                loadingMsg.remove();
+                const aiMsg = document.createElement('div');
+                aiMsg.className = "bg-purple-900/40 border border-purple-700/40 text-purple-100 p-3.5 rounded-xl max-w-[85%] leading-relaxed shadow-sm";
+                aiMsg.innerText = aiReply;
+                chatBox.appendChild(aiMsg);
+            } catch (err) {
+                loadingMsg.remove();
+                const errMsg = document.createElement('div');
+                errMsg.className = "bg-rose-900/40 border border-rose-700/40 text-rose-200 p-3 rounded-xl max-w-[85%] text-xs";
+                errMsg.innerText = "Maaf, kendala jaringan. Silakan coba lagi nanti.";
+                chatBox.appendChild(errMsg);
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // ==========================================
+        // REAL-TIME CHAT SYSTEM (WALI, GURU, ADMIN)
+        // ==========================================
+        
+        // ADMIN CHAT CENTER
+        function renderAdminChatCenter() {
+            const listContainer = document.getElementById('adminWaliContactList');
+            listContainer.innerHTML = '';
+
+            dbSantri.forEach(s => {
+                const unreadCount = dbMessages.filter(m => m.santriId === s.id && m.recipientRole === 'admin' && !m.readByAdmin).length;
+                const isSelected = selectedAdminChatSantriId === s.id;
+                
+                const item = document.createElement('div');
+                item.onclick = () => selectAdminChatSantri(s.id);
+                item.className = `p-3 rounded-xl cursor-pointer transition flex items-center justify-between border ${isSelected ? 'bg-emerald-100/70 border-emerald-400 font-bold' : 'bg-white hover:bg-slate-100 border-slate-200'}`;
+                item.innerHTML = `
+                    <div>
+                        <h5 class="text-xs font-bold text-slate-800">${s.wali}</h5>
+                        <p class="text-[11px] text-slate-500">Santri: ${s.nama} (${s.kelas})</p>
+                    </div>
+                    ${unreadCount > 0 ? `<span class="bg-rose-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">${unreadCount} New</span>` : ''}
+                `;
+                listContainer.appendChild(item);
+            });
+
+            if (selectedAdminChatSantriId) {
+                renderAdminChatThread();
+            }
+        }
+
+        function selectAdminChatSantri(santriId) {
+            selectedAdminChatSantriId = santriId;
+            // Mark as read by admin
+            dbMessages.forEach(m => {
+                if (m.santriId === santriId && m.recipientRole === 'admin') m.readByAdmin = true;
+            });
+            updateUnreadBadges();
+            renderAdminChatCenter();
+        }
+
+        function renderAdminChatThread() {
+            const s = dbSantri.find(st => st.id === selectedAdminChatSantriId);
+            if (!s) return;
+
+            document.getElementById('adminChatActiveTitle').innerText = `Obrolan dengan ${s.wali}`;
+            document.getElementById('adminChatActiveSub').innerText = `Wali Santri dari: ${s.nama} (${s.kelas}) | No. HP: ${s.hp}`;
+
+            const messagesArea = document.getElementById('adminChatMessagesArea');
+            messagesArea.innerHTML = '';
+
+            const thread = dbMessages.filter(m => m.santriId === s.id);
+            if (thread.length === 0) {
+                messagesArea.innerHTML = `<div class="text-center text-slate-400 py-8">Belum ada percakapan dengan ${s.wali}. Ketik pesan di bawah untuk memulai.</div>`;
+                return;
+            }
+
+            thread.forEach(m => {
+                const isAdmin = m.senderRole === 'admin';
+                const div = document.createElement('div');
+                div.className = `flex ${isAdmin ? 'justify-end' : 'justify-start'}`;
+                div.innerHTML = `
+                    <div class="max-w-[80%] p-3 rounded-2xl shadow-sm text-xs ${isAdmin ? 'bg-emerald-700 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 border border-slate-200 rounded-bl-none'}">
+                        <div class="font-bold text-[10px] mb-1 opacity-80">${isAdmin ? 'Admin Pondok' : s.wali} • ${m.time}</div>
+                        <div>${m.text}</div>
+                    </div>
+                `;
+                messagesArea.appendChild(div);
+            });
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function handleAdminSendMessage(e) {
+            e.preventDefault();
+            if (!selectedAdminChatSantriId) {
+                showToast("Pilih kontak Wali Santri terlebih dahulu!", "warning");
+                return;
+            }
+            const input = document.getElementById('adminChatInput');
+            const txt = input.value.trim();
+            if (!txt) return;
+
+            const now = new Date();
+            const timeStr = `${now.toISOString().split('T')[0]} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+
+            const newId = dbMessages.length > 0 ? Math.max(...dbMessages.map(m => m.id)) + 1 : 1;
+            dbMessages.push({
+                id: newId,
+                santriId: selectedAdminChatSantriId,
+                senderRole: 'admin',
+                recipientRole: 'wali',
+                recipientId: selectedAdminChatSantriId,
+                text: txt,
+                time: timeStr,
+                readByAdmin: true,
+                readByGuru: true,
+                readByWali: false
+            });
+
+            input.value = '';
+            renderAdminChatThread();
+            showToast("Pesan terkirim!", "success");
+        }
+
+        // GURU CHAT CENTER
+        function renderGuruChatCenter() {
+            const listContainer = document.getElementById('guruWaliContactList');
+            listContainer.innerHTML = '';
+
+            dbSantri.forEach(s => {
+                const unreadCount = dbMessages.filter(m => m.santriId === s.id && m.recipientRole === 'guru' && m.recipientId === currentUser.id && !m.readByGuru).length;
+                const isSelected = selectedGuruChatSantriId === s.id;
+
+                const item = document.createElement('div');
+                item.onclick = () => selectGuruChatSantri(s.id);
+                item.className = `p-3 rounded-xl cursor-pointer transition flex items-center justify-between border ${isSelected ? 'bg-blue-100/70 border-blue-400 font-bold' : 'bg-white hover:bg-slate-100 border-slate-200'}`;
+                item.innerHTML = `
+                    <div>
+                        <h5 class="text-xs font-bold text-slate-800">${s.wali}</h5>
+                        <p class="text-[11px] text-slate-500">Santri: ${s.nama} (${s.kelas})</p>
+                    </div>
+                    ${unreadCount > 0 ? `<span class="bg-rose-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">${unreadCount} New</span>` : ''}
+                `;
+                listContainer.appendChild(item);
+            });
+
+            if (selectedGuruChatSantriId) {
+                renderGuruChatThread();
+            }
+        }
+
+        function selectGuruChatSantri(santriId) {
+            selectedGuruChatSantriId = santriId;
+            dbMessages.forEach(m => {
+                if (m.santriId === santriId && m.recipientRole === 'guru' && m.recipientId === currentUser.id) m.readByGuru = true;
+            });
+            updateUnreadBadges();
+            renderGuruChatCenter();
+        }
+
+        function renderGuruChatThread() {
+            const s = dbSantri.find(st => st.id === selectedGuruChatSantriId);
+            if (!s) return;
+
+            document.getElementById('guruChatActiveTitle').innerText = `Obrolan Wali: ${s.wali}`;
+            document.getElementById('guruChatActiveSub').innerText = `Santri: ${s.nama} (${s.kelas})`;
+
+            const messagesArea = document.getElementById('guruChatMessagesArea');
+            messagesArea.innerHTML = '';
+
+            const thread = dbMessages.filter(m => m.santriId === s.id && (m.recipientRole === 'guru' || m.senderRole === 'guru'));
+            if (thread.length === 0) {
+                messagesArea.innerHTML = `<div class="text-center text-slate-400 py-8">Belum ada obrolan langsung dengan ${s.wali}. Ketik balasan untuk memulai.</div>`;
+                return;
+            }
+
+            thread.forEach(m => {
+                const isGuru = m.senderRole === 'guru';
+                const div = document.createElement('div');
+                div.className = `flex ${isGuru ? 'justify-end' : 'justify-start'}`;
+                div.innerHTML = `
+                    <div class="max-w-[80%] p-3 rounded-2xl shadow-sm text-xs ${isGuru ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 border border-slate-200 rounded-bl-none'}">
+                        <div class="font-bold text-[10px] mb-1 opacity-80">${isGuru ? currentUser.nama : s.wali} • ${m.time}</div>
+                        <div>${m.text}</div>
+                    </div>
+                `;
+                messagesArea.appendChild(div);
+            });
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function handleGuruSendMessage(e) {
+            e.preventDefault();
+            if (!selectedGuruChatSantriId) {
+                showToast("Pilih kontak Wali Santri terlebih dahulu!", "warning");
+                return;
+            }
+            const input = document.getElementById('guruChatInput');
+            const txt = input.value.trim();
+            if (!txt) return;
+
+            const now = new Date();
+            const timeStr = `${now.toISOString().split('T')[0]} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+
+            const newId = dbMessages.length > 0 ? Math.max(...dbMessages.map(m => m.id)) + 1 : 1;
+            dbMessages.push({
+                id: newId,
+                santriId: selectedGuruChatSantriId,
+                senderRole: 'guru',
+                recipientRole: 'wali',
+                recipientId: selectedGuruChatSantriId,
+                text: txt,
+                time: timeStr,
+                readByAdmin: true,
+                readByGuru: true,
+                readByWali: false
+            });
+
+            input.value = '';
+            renderGuruChatThread();
+            showToast("Balasan terkirim ke Wali Santri!", "success");
+        }
+
+        // AI ASSISTANT: DRAFT CHAT REPLY (FOR GURU & ADMIN)
+        async function generateAiChatReplyDraft(role) {
+            const santriId = role === 'admin' ? selectedAdminChatSantriId : selectedGuruChatSantriId;
+            const inputEl = role === 'admin' ? document.getElementById('adminChatInput') : document.getElementById('guruChatInput');
+            const btnEl = role === 'admin' ? document.getElementById('btnAiDraftAdmin') : document.getElementById('btnAiDraftGuru');
+
+            if (!santriId) {
+                showToast("Pilih kontak percakapan wali terlebih dahulu!", "warning");
+                return;
+            }
+
+            const s = dbSantri.find(st => st.id === santriId);
+            const thread = dbMessages.filter(m => m.santriId === santriId);
+            const lastMsg = thread.length > 0 ? thread[thread.length - 1].text : "Pertanyaan seputar kabar dan hafalan santri.";
+
+            btnEl.disabled = true;
+            btnEl.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Draf AI...</span>`;
+
+            const prompt = `Pesan terakhir Wali Santri (${s.wali} orang tua dari ${s.nama}): "${lastMsg}".
+Buatkan draf balasan ramah, santun, Islami, dan informatif dari pihak ${role === 'admin' ? 'Admin Pengurus Pesantren' : 'Ustadz Pengajar'}. Maksimal 2-3 kalimat.`;
+
+            try {
+                const draft = await callGeminiAPI(prompt, "Sajikan langsung draf teks balasan yang siap dikirim.");
+                inputEl.value = draft;
+                showToast("Draf balasan AI dimasukkan ke kolom pesan!", "success");
+            } catch (err) {
+                showToast("Gagal menyusun draf balasan AI.", "error");
+            } finally {
+                btnEl.disabled = false;
+                btnEl.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Bantu Draf Balasan AI</span>`;
+            }
+        }
+
+        // WALI SANTRI CHAT CENTER
+        function renderWaliChatCenter() {
+            if (!currentUser) return;
+            const s = currentUser;
+
+            const recList = document.getElementById('waliRecipientList');
+            recList.innerHTML = '';
+
+            // Option 1: Admin
+            const isSelAdmin = selectedWaliRecipient.role === 'admin';
+            const itemAdmin = document.createElement('div');
+            itemAdmin.onclick = () => selectWaliRecipient('admin', 0);
+            itemAdmin.className = `p-3 rounded-xl cursor-pointer transition border ${isSelAdmin ? 'bg-purple-100/70 border-purple-400 font-bold' : 'bg-white hover:bg-slate-100 border-slate-200'}`;
+            itemAdmin.innerHTML = `
+                <h5 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-user-shield text-emerald-600 mr-1"></i> Admin Pondok</h5>
+                <p class="text-[11px] text-slate-500">Sekretariat & Pengurus Utama</p>
+            `;
+            recList.appendChild(itemAdmin);
+
+            // Option 2+: Teachers
+            dbGuru.forEach(g => {
+                const isSelG = selectedWaliRecipient.role === 'guru' && selectedWaliRecipient.id === g.id;
+                const itemG = document.createElement('div');
+                itemG.onclick = () => selectWaliRecipient('guru', g.id);
+                itemG.className = `p-3 rounded-xl cursor-pointer transition border ${isSelG ? 'bg-purple-100/70 border-purple-400 font-bold' : 'bg-white hover:bg-slate-100 border-slate-200'}`;
+                itemG.innerHTML = `
+                    <h5 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-user-tie text-blue-600 mr-1"></i> ${g.nama}</h5>
+                    <p class="text-[11px] text-slate-500">${g.mapel}</p>
+                `;
+                recList.appendChild(itemG);
+            });
+
+            renderWaliChatThread();
+        }
+
+        function selectWaliRecipient(role, id) {
+            selectedWaliRecipient = { role, id };
+            renderWaliChatCenter();
+        }
+
+        function renderWaliChatThread() {
+            if (!currentUser) return;
+            const s = currentUser;
+
+            const targetRole = selectedWaliRecipient.role;
+            const targetId = selectedWaliRecipient.id;
+
+            const titleEl = document.getElementById('waliChatActiveTitle');
+            const subEl = document.getElementById('waliChatActiveSub');
+
+            if (targetRole === 'admin') {
+                titleEl.innerText = "Pesan Kepada Admin Pondok";
+                subEl.innerText = "Layanan Informasi Pengurus & Sekretariat";
+            } else {
+                const g = dbGuru.find(item => item.id === targetId) || { nama: "Ustadz", mapel: "-" };
+                titleEl.innerText = `Pesan Kepada ${g.nama}`;
+                subEl.innerText = `Pengajar: ${g.mapel}`;
+            }
+
+            const messagesArea = document.getElementById('waliChatMessagesArea');
+            messagesArea.innerHTML = '';
+
+            const thread = dbMessages.filter(m => m.santriId === s.id && (targetRole === 'admin' ? m.recipientRole === 'admin' || m.senderRole === 'admin' : m.recipientId === targetId || (m.senderRole === 'guru' && m.recipientId === s.id)));
+
+            if (thread.length === 0) {
+                messagesArea.innerHTML = `<div class="text-center text-slate-400 py-8">Belum ada percakapan. Tuliskan pesan untuk mengajukan pertanyaan.</div>`;
+                return;
+            }
+
+            thread.forEach(m => {
+                const isMe = m.senderRole === 'wali';
+                const div = document.createElement('div');
+                div.className = `flex ${isMe ? 'justify-end' : 'justify-start'}`;
+                div.innerHTML = `
+                    <div class="max-w-[80%] p-3 rounded-2xl shadow-sm text-xs ${isMe ? 'bg-purple-600 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 border border-slate-200 rounded-bl-none'}">
+                        <div class="font-bold text-[10px] mb-1 opacity-80">${isMe ? 'Anda (Wali Santri)' : (m.senderRole === 'admin' ? 'Admin Pondok' : 'Ustadz')} • ${m.time}</div>
+                        <div>${m.text}</div>
+                    </div>
+                `;
+                messagesArea.appendChild(div);
+            });
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function handleWaliSendMessage(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+            const input = document.getElementById('waliChatInput');
+            const txt = input.value.trim();
+            if (!txt) return;
+
+            const now = new Date();
+            const timeStr = `${now.toISOString().split('T')[0]} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+
+            const newId = dbMessages.length > 0 ? Math.max(...dbMessages.map(m => m.id)) + 1 : 1;
+            dbMessages.push({
+                id: newId,
+                santriId: currentUser.id,
+                senderRole: 'wali',
+                recipientRole: selectedWaliRecipient.role,
+                recipientId: selectedWaliRecipient.id,
+                text: txt,
+                time: timeStr,
+                readByAdmin: false,
+                readByGuru: false,
+                readByWali: true
+            });
+
+            input.value = '';
+            renderWaliChatThread();
+            showToast("Pesan Anda telah terkirim!", "success");
+        }
+    </script>
+</body>
+</html>
+```

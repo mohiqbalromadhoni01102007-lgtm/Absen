@@ -1,0 +1,6 @@
+{
+  "name": "SIPONDOK - PP Miftahul Ulum Kalisat",
+  "description": "Sistem Informasi Pesantren Terpadu PP Miftahul Ulum Kalisat: manajemen 12 kelas Awaliyah & Wustho, presensi santri, kedisiplinan & sanksi mendidik AI, obrolan wali santri, dan laporan PDF resmi ber-KOP surat.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
